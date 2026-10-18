@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>8十決策模擬系統 - 全真競賽月度推進、人料平衡與簡約作戰模擬器</title>
+  <title>8十決策模擬系統 - 全真競賽月度推進、人料平衡與自訂能力值模擬器</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -66,10 +66,10 @@
                 <span id="save-status-text">已自動存檔</span>
               </span>
             </div>
-            <h1 class="text-base sm:text-lg font-black mt-0.5 text-white tracking-tight">8-Cross 決策模擬系統：真實比賽跨月推進與產能平衡</h1>
+            <h1 class="text-base sm:text-lg font-black mt-0.5 text-white tracking-tight">8-Cross 決策模擬系統：真實比賽跨月推進、自訂員工能力與產能平衡</h1>
           </div>
 
-          <!-- Dual Mode Toggle (De-clutter Solution) -->
+          <!-- Dual Mode Toggle -->
           <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-700/80 text-xs shadow-inner">
             <button id="btn-mode-simple" onclick="switchViewMode('simple')" class="px-3 py-1 rounded-lg font-bold transition bg-emerald-600 text-white shadow">
               ⚡ 簡約作戰模式
@@ -136,7 +136,7 @@
               <h2 class="text-base font-bold text-white">產能與原料雙向平衡聯動器</h2>
               <span id="balance-pill" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">★ 完美平衡</span>
             </div>
-            <p class="text-[11px] text-slate-400">依生產人力即時反推滿足產能所需原料，告別工時與材料浪費。</p>
+            <p class="text-[11px] text-slate-400">依生產人力加工能（支援自訂能力值）精準反推原料，告別工時與材料浪費。</p>
           </div>
         </div>
 
@@ -151,7 +151,7 @@
         </div>
       </div>
 
-      <!-- Capacity & Balanced Material 3-Card Grid (Crisp & Clean) -->
+      <!-- Capacity & Balanced Material 3-Card Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <!-- 1. Human Processing Capacity -->
         <div class="bg-slate-900/90 border border-slate-750 p-3 rounded-xl space-y-1">
@@ -168,7 +168,7 @@
           </div>
         </div>
 
-        <!-- 2. Required Raw Material Pairs (Reverse Calculation) -->
+        <!-- 2. Required Raw Material Pairs -->
         <div class="bg-slate-900/90 border border-amber-500/40 p-3 rounded-xl space-y-1 relative overflow-hidden">
           <div class="flex justify-between items-center text-xs text-amber-300 font-bold">
             <span>滿足人力所需原料</span>
@@ -230,7 +230,7 @@
             <span class="text-xs text-emerald-300 font-mono font-bold" id="staffing-status-a">10 / 20 人</span>
           </div>
 
-          <!-- Production Lines Compact (Collapsible or Clean) -->
+          <!-- Production Lines Compact -->
           <div class="grid grid-cols-4 gap-2 text-xs">
             <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-center">
               <label class="text-slate-400 block text-[10px] mb-0.5">廠房 (座)</label>
@@ -254,27 +254,81 @@
             </div>
           </div>
 
-          <!-- Production Workers Recruitment -->
-          <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-emerald-400">生產工人招聘 (人)</span>
-              <span class="text-slate-400 text-[11px]">底薪：1類$2.8萬 / 2類$3.5萬 / 3類$5.25萬</span>
+          <!-- Production Workers Recruitment & Editable Abilities (FEATURE FOCUS) -->
+          <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-1.5 text-xs">
+              <div>
+                <span class="font-bold text-emerald-400">生產工人招聘與能力值</span>
+                <span class="text-slate-400 text-[11px] ml-1.5">初始基底：1類 0.50 / 2類 0.60 / 3類 0.70</span>
+              </div>
+              <button onclick="resetAbilitiesToCalculated()" title="依據累積培訓經驗值重新計算能力"
+                class="self-start sm:self-auto px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold border border-slate-700 transition flex items-center gap-1">
+                <span>🔄</span> 還原培訓推算
+              </button>
             </div>
+
             <div class="grid grid-cols-3 gap-2.5 text-xs">
-              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>1類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a1">0.54</span></div>
-                <input type="number" id="staff-prod-a1" min="0" max="30" value="1" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
+              <!-- Worker 1 -->
+              <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-center">
+                <div class="flex justify-between items-center text-[11px]">
+                  <span class="font-bold text-slate-300">1類工人</span>
+                  <span class="text-slate-500 text-[10px]">基底0.50</span>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left">招聘人數 (人)</label>
+                  <input type="number" id="staff-prod-a1" min="0" max="30" value="1" oninput="onInputDataChange()"
+                    class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 font-bold text-center text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left flex justify-between">
+                    <span>能力值(可自填)</span>
+                    <span class="text-[9px] text-emerald-400 font-mono">+0.02</span>
+                  </label>
+                  <input type="number" id="inp-ab-a1" step="0.01" min="0.10" max="2.00" value="0.54" oninput="onCustomAbilityInput()"
+                    class="w-full bg-slate-850 border border-emerald-500/50 rounded px-1 py-0.5 font-bold font-mono text-center text-emerald-300 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
               </div>
-              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>2類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a2">0.70</span></div>
-                <input type="number" id="staff-prod-a2" min="0" max="30" value="7" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
+
+              <!-- Worker 2 -->
+              <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-center">
+                <div class="flex justify-between items-center text-[11px]">
+                  <span class="font-bold text-slate-300">2類工人</span>
+                  <span class="text-slate-500 text-[10px]">基底0.60</span>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left">招聘人數 (人)</label>
+                  <input type="number" id="staff-prod-a2" min="0" max="30" value="7" oninput="onInputDataChange()"
+                    class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 font-bold text-center text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left flex justify-between">
+                    <span>能力值(可自填)</span>
+                    <span class="text-[9px] text-emerald-400 font-mono">+0.05</span>
+                  </label>
+                  <input type="number" id="inp-ab-a2" step="0.01" min="0.10" max="2.00" value="0.70" oninput="onCustomAbilityInput()"
+                    class="w-full bg-slate-850 border border-emerald-500/50 rounded px-1 py-0.5 font-bold font-mono text-center text-emerald-300 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
               </div>
-              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>3類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a3">0.86</span></div>
-                <input type="number" id="staff-prod-a3" min="0" max="30" value="2" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
+
+              <!-- Worker 3 -->
+              <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-center">
+                <div class="flex justify-between items-center text-[11px]">
+                  <span class="font-bold text-slate-300">3類工人</span>
+                  <span class="text-slate-500 text-[10px]">基底0.70</span>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left">招聘人數 (人)</label>
+                  <input type="number" id="staff-prod-a3" min="0" max="30" value="2" oninput="onInputDataChange()"
+                    class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 font-bold text-center text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5 text-left flex justify-between">
+                    <span>能力值(可自填)</span>
+                    <span class="text-[9px] text-emerald-400 font-mono">+0.08</span>
+                  </label>
+                  <input type="number" id="inp-ab-a3" step="0.01" min="0.10" max="2.00" value="0.86" oninput="onCustomAbilityInput()"
+                    class="w-full bg-slate-850 border border-emerald-500/50 rounded px-1 py-0.5 font-bold font-mono text-center text-emerald-300 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
               </div>
             </div>
           </div>
@@ -286,7 +340,7 @@
               <span class="text-slate-400 text-[11px]">(實測1類+0.02 / 2類+0.05 永久累積)</span>
             </div>
             <div class="flex items-center gap-2">
-              <select id="train-prod-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-600 rounded px-2 py-0.5 text-slate-200 font-bold text-xs">
+              <select id="train-prod-lvl" onchange="onProductionTrainingChange()" class="bg-slate-850 border border-slate-600 rounded px-2 py-0.5 text-slate-200 font-bold text-xs">
                 <option value="0">0級 (無)</option>
                 <option value="1">1級 (+0.02/+0.05, 10萬)</option>
                 <option value="2">2級 (+0.04/+0.10, 20萬)</option>
@@ -350,7 +404,7 @@
             </div>
           </div>
 
-          <!-- Compact Summary View (Default in Simple Mode) -->
+          <!-- Compact Summary View -->
           <div id="dept-summary-row" class="grid grid-cols-4 gap-2 text-center text-xs">
             <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
               <span class="text-blue-400 block text-[10px]">行銷 (4人)</span>
@@ -370,7 +424,7 @@
             </div>
           </div>
 
-          <!-- Expanded 4 Departments Grid (Hidden by default in Simple Mode) -->
+          <!-- Expanded 4 Departments Grid -->
           <div id="dept-details-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
             <!-- Marketing -->
             <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
@@ -504,7 +558,7 @@
       <!-- RIGHT COLUMN: EXECUTIVE KPI SUMMARY & FINANCIAL TABS (5 Cols) -->
       <div class="lg:col-span-5 space-y-4">
 
-        <!-- EXECUTIVE KPI CARDS (CLEAN & BEAUTIFUL IN SIMPLE MODE) -->
+        <!-- EXECUTIVE KPI CARDS -->
         <div class="grid grid-cols-3 gap-2.5">
           <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-3 rounded-2xl border border-slate-800 shadow text-center">
             <span class="text-[11px] text-slate-400 block mb-0.5">預估營收</span>
@@ -606,10 +660,10 @@
               <tbody class="divide-y divide-slate-850">
                 <tr><td>(1)</td><td class="font-sans">期初庫存</td><td class="text-right" id="inv-r1-qty">35</td><td class="text-right" id="inv-r2-cost">4,698</td><td class="text-right" id="inv-r3-tot">$16.4 萬</td></tr>
                 <tr><td>(2)</td><td class="font-sans text-emerald-300">完工入庫</td><td class="text-right text-emerald-300" id="inv-r4-qty">369</td><td class="text-right" id="inv-r5-cost">5,635</td><td class="text-right" id="inv-r6-tot">$207.8 萬</td></tr>
-                <tr class="bg-slate-950 font-bold"><td>(3)</td><td class="font-sans text-white">可供銷售合計</td><td class="text-right text-white" id="inv-r7-totqty">404</td><td class="text-right text-amber-300" id="inv-r7-cost">5,554</td><td class="text-right text-white" id="inv-r7-tot">$224.2 萬</td></tr>
+                <tr class="bg-slate-950 font-bold"><td>(3)</td><td class="font-sans text-white">可供銷售合計</td><td class="text-right text-white" id="inv-r7-totqty">404</td><td class="text-right" id="inv-r7-cost">5,554</td><td class="text-right" id="inv-r7-tot">$224.2 萬</td></tr>
                 <tr><td>(4)</td><td class="font-sans text-slate-400">當期出貨(90%)</td><td class="text-right" id="inv-r8-qty">332</td><td class="text-right">-</td><td class="text-right">-</td></tr>
                 <tr class="bg-rose-950/20 font-bold"><td>-</td><td class="font-sans text-rose-300">銷貨成本總計</td><td class="text-right text-rose-300" id="inv-cogs-qty">366</td><td class="text-right text-rose-300" id="inv-cogs-cost">5,554</td><td class="text-right text-rose-400" id="inv-cogs-tot">$203.1 萬</td></tr>
-                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40"><td>(9)</td><td class="font-sans text-indigo-300">期末庫存結轉下期</td><td class="text-right text-indigo-200" id="inv-r13-qty">38</td><td class="text-right text-amber-300" id="inv-r14-cost">5,554</td><td class="text-right text-indigo-300" id="inv-r15-tot">$21.1 萬</td></tr>
+                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40"><td>(9)</td><td class="font-sans text-indigo-300">期末庫存結轉下期</td><td class="text-right text-indigo-200" id="inv-r13-qty">38</td><td class="text-right" id="inv-r14-cost">5,554</td><td class="text-right text-indigo-300" id="inv-r15-tot">$21.1 萬</td></tr>
               </tbody>
             </table>
           </div>
@@ -684,7 +738,7 @@
         <button onclick="closeSettlementModal()" class="text-slate-400 hover:text-white text-lg p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
       </div>
 
-      <!-- Part 1: Financial Performance Grid (Clean 4 Cards) -->
+      <!-- Part 1: Financial Performance Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-medium">
         <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
           <span class="text-slate-400 block text-[10px]">銷貨營收</span>
@@ -789,7 +843,7 @@
   <!-- ==================== JAVASCRIPT SIMULATION ENGINE ==================== -->
   <script>
     // VIEW MODE CONTROLLER (SIMPLE vs EXPERT)
-    let viewMode = 'simple'; // 'simple' or 'expert'
+    let viewMode = 'simple';
     let deptExpanded = false;
 
     function switchViewMode(mode) {
@@ -800,7 +854,6 @@
       if (mode === 'simple') {
         btnSimple.className = 'px-3 py-1 rounded-lg font-bold transition bg-emerald-600 text-white shadow';
         btnExpert.className = 'px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white';
-        // Hide details by default
         deptExpanded = false;
         document.getElementById('dept-summary-row').classList.remove('hidden');
         document.getElementById('dept-details-grid').classList.add('hidden');
@@ -808,14 +861,13 @@
       } else {
         btnExpert.className = 'px-3 py-1 rounded-lg font-bold transition bg-blue-600 text-white shadow';
         btnSimple.className = 'px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white';
-        // Show details in expert mode
         deptExpanded = true;
         document.getElementById('dept-summary-row').classList.add('hidden');
         document.getElementById('dept-details-grid').classList.remove('hidden');
         document.getElementById('btn-toggle-depts').innerText = '收合細項 ▲';
       }
       calculateAll();
-      showToast(`已切換為：${mode === 'simple' ? '⚡ 簡約作戰模式 (金額萬元化)' : '📊 專家詳細對帳模式 (全額展示)'}`);
+      showToast(`已切換為：${mode === 'simple' ? '⚡ 簡約作戰模式' : '📊 專家詳細對帳模式'}`);
     }
 
     function toggleDeptDetails() {
@@ -835,7 +887,6 @@
       }
     }
 
-    // Money Formatting: In simple mode converts to 萬 (Ten Thousands), in expert mode shows exact
     function fmtMoney(num) {
       if (viewMode === 'simple') {
         if (Math.abs(num) >= 10000) {
@@ -895,6 +946,15 @@
     let currentMonth = 6;
     let appProfiles = {};
 
+    function calcFormulaAbilities(accumBoost, currentLvl) {
+      const totalBoost = accumBoost + currentLvl;
+      return {
+        c1: Math.min(1.00, 0.50 + totalBoost * 0.02),
+        c2: Math.min(1.20, 0.60 + totalBoost * 0.05),
+        c3: Math.min(1.40, 0.70 + totalBoost * 0.08)
+      };
+    }
+
     function getDefaultMonthDecision(m) {
       if (m <= 2) {
         return {
@@ -902,6 +962,7 @@
           preorderA01: (m===2?250:0), preorderA02: (m===2?250:0),
           priceEm: 250, priceDev: 300, allocEm: 50, allocDev: 50,
           staffA1: 0, staffA2: 0, staffA3: 0,
+          customAb1: 0.50, customAb2: 0.60, customAb3: 0.70,
           staffMkt1: 2, staffMkt2: 0, staffMkt3: 0, staffMgmt1: 2, staffMgmt2: 0, staffMgmt3: 0,
           staffFin1: 2, staffFin2: 0, staffFin3: 0, staffTech1: 5, staffTech2: 0, staffTech3: 0,
           trainProd: (m===2?1:0), trainMkt: 0, trainMgmt: 0, trainFin: 0, trainTech: 0
@@ -915,6 +976,9 @@
         preorderA02: (m>=10?900:(m>=9?750:(m>=6?500:300))),
         priceEm: 275, priceDev: 300, allocEm: 60, allocDev: 40,
         staffA1: 1, staffA2: 7, staffA3: 2,
+        customAb1: (m>=9?0.54:(m>=6?0.54:0.52)),
+        customAb2: (m>=9?0.70:(m>=6?0.70:0.65)),
+        customAb3: (m>=9?0.86:(m>=6?0.86:0.78)),
         staffMkt1: 0, staffMkt2: 4, staffMkt3: 0, staffMgmt1: 2, staffMgmt2: 1, staffMgmt3: 0,
         staffFin1: 2, staffFin2: 0, staffFin3: 0, staffTech1: 4, staffTech2: 0, staffTech3: 0,
         trainProd: 0, trainMkt: 0, trainMgmt: 0, trainFin: 0, trainTech: 0
@@ -1120,6 +1184,15 @@
       document.getElementById('staff-prod-a2').value = data.staffA2 ?? 7;
       document.getElementById('staff-prod-a3').value = data.staffA3 ?? 2;
 
+      // Abilities (Direct Custom Input or Calculated Default)
+      const accumProd = (p?.accumTrainProd || (m >= 9 ? 2 : (m >= 3 ? 1 : 0)));
+      const tProdLvl = data.trainProd ?? 0;
+      const defAb = calcFormulaAbilities(accumProd, tProdLvl);
+
+      document.getElementById('inp-ab-a1').value = (data.customAb1 !== undefined && data.customAb1 !== null) ? Number(data.customAb1).toFixed(2) : defAb.c1.toFixed(2);
+      document.getElementById('inp-ab-a2').value = (data.customAb2 !== undefined && data.customAb2 !== null) ? Number(data.customAb2).toFixed(2) : defAb.c2.toFixed(2);
+      document.getElementById('inp-ab-a3').value = (data.customAb3 !== undefined && data.customAb3 !== null) ? Number(data.customAb3).toFixed(2) : defAb.c3.toFixed(2);
+
       document.getElementById('staff-mkt-1').value = data.staffMkt1 ?? 0;
       document.getElementById('staff-mkt-2').value = data.staffMkt2 ?? 4;
       document.getElementById('staff-mkt-3').value = data.staffMkt3 ?? 0;
@@ -1161,6 +1234,9 @@
         priceEm: getVal('inp-price-em'),
         priceDev: getVal('inp-price-dev'),
         staffA1: getVal('staff-prod-a1'), staffA2: getVal('staff-prod-a2'), staffA3: getVal('staff-prod-a3'),
+        customAb1: parseFloat(document.getElementById('inp-ab-a1').value) || 0.50,
+        customAb2: parseFloat(document.getElementById('inp-ab-a2').value) || 0.60,
+        customAb3: parseFloat(document.getElementById('inp-ab-a3').value) || 0.70,
         staffMkt1: getVal('staff-mkt-1'), staffMkt2: getVal('staff-mkt-2'), staffMkt3: getVal('staff-mkt-3'),
         staffMgmt1: getVal('staff-mgmt-1'), staffMgmt2: getVal('staff-mgmt-2'), staffMgmt3: getVal('staff-mgmt-3'),
         staffFin1: getVal('staff-fin-1'), staffFin2: getVal('staff-fin-2'), staffFin3: getVal('staff-fin-3'),
@@ -1176,6 +1252,42 @@
       calculateAll();
     }
 
+    function onCustomAbilityInput() {
+      saveCurrentMonthInput();
+      calculateAll();
+    }
+
+    function onProductionTrainingChange() {
+      const m = currentMonth;
+      const p = appProfiles[currentProfile];
+      const accumProd = (p?.accumTrainProd || (m >= 9 ? 2 : (m >= 3 ? 1 : 0)));
+      const tProdLvl = getVal('train-prod-lvl');
+      const ab = calcFormulaAbilities(accumProd, tProdLvl);
+
+      document.getElementById('inp-ab-a1').value = ab.c1.toFixed(2);
+      document.getElementById('inp-ab-a2').value = ab.c2.toFixed(2);
+      document.getElementById('inp-ab-a3').value = ab.c3.toFixed(2);
+
+      saveCurrentMonthInput();
+      calculateAll();
+    }
+
+    function resetAbilitiesToCalculated() {
+      const m = currentMonth;
+      const p = appProfiles[currentProfile];
+      const accumProd = (p?.accumTrainProd || (m >= 9 ? 2 : (m >= 3 ? 1 : 0)));
+      const tProdLvl = getVal('train-prod-lvl');
+      const ab = calcFormulaAbilities(accumProd, tProdLvl);
+
+      document.getElementById('inp-ab-a1').value = ab.c1.toFixed(2);
+      document.getElementById('inp-ab-a2').value = ab.c2.toFixed(2);
+      document.getElementById('inp-ab-a3').value = ab.c3.toFixed(2);
+
+      saveCurrentMonthInput();
+      calculateAll();
+      showToast(`已還原能力值為培訓基準（1類 ${ab.c1.toFixed(2)} / 2類 ${ab.c2.toFixed(2)} / 3類 ${ab.c3.toFixed(2)}）`);
+    }
+
     function onCustomYieldChange() {
       onInputDataChange();
     }
@@ -1186,7 +1298,6 @@
       loadMonthData(n);
     }
 
-    // ONE-CLICK AUTO BALANCED RAW MATERIAL SOLVER (滿足人力產能所需原料)
     function applyAutoBalancedPairs() {
       const yieldRate = (parseFloat(document.getElementById('inp-yield-custom').value) || 73.8) / 100;
       const humanCap = window.currentHumanCap || 369;
@@ -1227,7 +1338,7 @@
       document.getElementById('m-carry-cash').innerText = `$${fmtMoney(rep.endCash || 5626834)}`;
       document.getElementById('m-carry-mat').innerText = `${formatNumber(rep.nextAvailMat || 500)} 套`;
       document.getElementById('m-carry-fg').innerText = `${formatNumber(rep.endFgQty || 38)} 台 ($${fmtMoney(rep.endFgCost || 210968)})`;
-      document.getElementById('m-carry-ab').innerText = `1類 ${rep.ab1 || '0.54'} / 2類 ${rep.ab2 || '0.70'}`;
+      document.getElementById('m-carry-ab').innerText = `1類 ${rep.ab1 || '0.54'} / 2類 ${rep.ab2 || '0.70'} / 3類 ${rep.ab3 || '0.86'}`;
 
       document.getElementById('modal-settlement').classList.remove('hidden');
     }
@@ -1242,13 +1353,13 @@
       const curM = currentMonth;
       const nextM = curM + 1;
 
-      // 1. Accumulate Training
+      // 1. Accumulate Training Level
       const curTrainProd = getVal('train-prod-lvl');
       if (curTrainProd > 0) {
         p.accumTrainProd = (p.accumTrainProd || 0) + 1;
       }
 
-      // 2. Prepare Next Month Draft
+      // 2. Prepare Next Month Draft (Carry over abilities + any new training increment)
       const curDecision = p.months[curM];
       const nextDecision = JSON.parse(JSON.stringify(curDecision));
       nextDecision.trainProd = 0;
@@ -1256,6 +1367,13 @@
       nextDecision.trainMgmt = 0;
       nextDecision.trainFin = 0;
       nextDecision.trainTech = 0;
+
+      // Carry custom abilities with training increment applied if trained
+      if (curTrainProd > 0) {
+        nextDecision.customAb1 = Number((parseFloat(curDecision.customAb1 || 0.50) + 0.02).toFixed(2));
+        nextDecision.customAb2 = Number((parseFloat(curDecision.customAb2 || 0.60) + 0.05).toFixed(2));
+        nextDecision.customAb3 = Number((parseFloat(curDecision.customAb3 || 0.70) + 0.08).toFixed(2));
+      }
 
       if (!p.months[nextM]) {
         p.months[nextM] = nextDecision;
@@ -1272,7 +1390,7 @@
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      showToast(`已進入第 ${nextM} 個月！期初現金與到貨原料已結轉就緒。`);
+      showToast(`已進入第 ${nextM} 個月！期初現金、原料與能力值已就緒。`);
     }
 
     // 6. MAIN CALCULATION ENGINE
@@ -1298,42 +1416,22 @@
 
       setHtml('train-prod-fee-badge', `$${fmtMoney(feeProd)}`);
 
-      const pProfile = appProfiles[currentProfile];
-      const accumProd = (pProfile?.accumTrainProd || (curMonth >= 9 ? 2 : (curMonth >= 3 ? 1 : 0)));
-
-      const incG1 = 0.02;
-      const incG2 = 0.05;
-      const incG3 = 0.08;
-
-      function calcDeptAbilities(accumBoost, currentLvl) {
-        const totalBoost = accumBoost + currentLvl;
-        return {
-          c1: Math.min(1.00, 0.50 + totalBoost * incG1),
-          c2: Math.min(1.20, 0.60 + totalBoost * incG2),
-          c3: Math.min(1.40, 0.70 + totalBoost * incG3)
-        };
-      }
-
-      const abProd = calcDeptAbilities(accumProd, tProdLvl);
-      const abMkt  = calcDeptAbilities(0, tMktLvl);
-      const abMgmt = calcDeptAbilities(0, tMgmtLvl);
-      const abFin  = calcDeptAbilities(0, tFinLvl);
-      const abTech = calcDeptAbilities(0, tTechLvl);
-
-      setHtml('txt-ab-a1', abProd.c1.toFixed(2));
-      setHtml('txt-ab-a2', abProd.c2.toFixed(2));
-      setHtml('txt-ab-a3', abProd.c3.toFixed(2));
+      // Read Custom Abilities directly from Input Box (defaults to 0.50, 0.60, 0.70)
+      const ab1 = parseFloat(document.getElementById('inp-ab-a1')?.value) || 0.50;
+      const ab2 = parseFloat(document.getElementById('inp-ab-a2')?.value) || 0.60;
+      const ab3 = parseFloat(document.getElementById('inp-ab-a3')?.value) || 0.70;
 
       const pA1 = getVal('staff-prod-a1'), pA2 = getVal('staff-prod-a2'), pA3 = getVal('staff-prod-a3');
       const totWorkersA = pA1 + pA2 + pA3;
       setHtml('staffing-status-a', `${totWorkersA} / ${linesA * 10} 人`);
 
-      const rawHumanCapA = Math.round(50 * (pA1 * abProd.c1 + pA2 * abProd.c2 + pA3 * abProd.c3));
+      // Human processing capacity using custom abilities
+      const rawHumanCapA = Math.round(50 * (pA1 * ab1 + pA2 * ab2 + pA3 * ab3));
       const maxHwCapA = linesA * 500;
       const humanCapA = linesA > 0 ? Math.min(maxHwCapA, rawHumanCapA) : 0;
       window.currentHumanCap = humanCapA;
 
-      const avgAbProd = totWorkersA > 0 ? ((pA1 * abProd.c1 + pA2 * abProd.c2 + pA3 * abProd.c3) / totWorkersA).toFixed(2) : '0.00';
+      const avgAbProd = totWorkersA > 0 ? ((pA1 * ab1 + pA2 * ab2 + pA3 * ab3) / totWorkersA).toFixed(2) : '0.00';
       setHtml('box-human-cap', `${formatNumber(humanCapA)} <span class="text-xs font-normal text-slate-400 font-sans">台/月</span>`);
       setHtml('box-human-workers', `${totWorkersA} 人`);
       setHtml('box-human-avg-ab', avgAbProd);
@@ -1376,7 +1474,19 @@
         diagEl.innerHTML = `⚠️ 工人人數不足以消化投料！多投 ${diffPairs} 套原料將回庫積壓。`;
       }
 
-      // Backend Sales Force
+      // Backend Sales Force Abilities
+      function calcDeptAb(tLvl) {
+        return {
+          c1: Math.min(1.00, ab1 + tLvl * 0.02),
+          c2: Math.min(1.20, ab2 + tLvl * 0.05),
+          c3: Math.min(1.40, ab3 + tLvl * 0.08)
+        };
+      }
+      const abMkt  = calcDeptAb(tMktLvl);
+      const abMgmt = calcDeptAb(tMgmtLvl);
+      const abFin  = calcDeptAb(tFinLvl);
+      const abTech = calcDeptAb(tTechLvl);
+
       const mkt1 = getVal('staff-mkt-1'), mkt2 = getVal('staff-mkt-2'), mkt3 = getVal('staff-mkt-3');
       const mgmt1 = getVal('staff-mgmt-1'), mgmt2 = getVal('staff-mgmt-2'), mgmt3 = getVal('staff-mgmt-3');
       const fin1 = getVal('staff-fin-1'), fin2 = getVal('staff-fin-2'), fin3 = getVal('staff-fin-3');
@@ -1604,8 +1714,9 @@
         nextAvailMat: preA01,
         endFgQty: endQty,
         endFgCost: endCostTot,
-        ab1: abProd.c1.toFixed(2),
-        ab2: abProd.c2.toFixed(2)
+        ab1: ab1.toFixed(2),
+        ab2: ab2.toFixed(2),
+        ab3: ab3.toFixed(2)
       };
     }
 
