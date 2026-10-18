@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>8十決策模擬系統 - 全真競賽月度推進、人料平衡與多方案模擬器</title>
+  <title>8十決策模擬系統 - 全真競賽月度推進、人料平衡與簡約作戰模擬器</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -34,14 +34,12 @@
       color: #ffffff;
       box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
     }
-    /* Modal Backdrop Blur */
     .modal-backdrop {
-      background-color: rgba(7, 11, 22, 0.82);
+      background-color: rgba(7, 11, 22, 0.85);
       backdrop-filter: blur(8px);
     }
-    /* Timeline Scrollbar */
     .timeline-container::-webkit-scrollbar {
-      height: 6px;
+      height: 5px;
     }
     .timeline-container::-webkit-scrollbar-track {
       background: #0f172a;
@@ -50,55 +48,62 @@
       background: #334155;
       border-radius: 3px;
     }
-    .timeline-container::-webkit-scrollbar-thumb:hover {
-      background: #475569;
-    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
 
   <!-- TOP HEADER & CONTROLS -->
   <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl backdrop-blur-md bg-opacity-95">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
-        <!-- Title & Badges -->
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">8十決策系統 (第51賽區)</span>
-            <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">全真競賽月度推進</span>
-            <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-purple-500/20 text-purple-400 border border-purple-500/30">人料雙向平衡</span>
-            <span id="save-status-badge" class="px-2 py-0.5 text-xs font-bold rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 shadow">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span id="save-status-text">設定檔已就緒</span>
-            </span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2.5">
+        <!-- Title & View Mode Toggle -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 text-[11px] font-bold rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">8十決策系統 (第51賽區)</span>
+              <span id="save-status-badge" class="px-2 py-0.5 text-[11px] font-bold rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="save-status-text">已自動存檔</span>
+              </span>
+            </div>
+            <h1 class="text-base sm:text-lg font-black mt-0.5 text-white tracking-tight">8-Cross 決策模擬系統：真實比賽跨月推進與產能平衡</h1>
           </div>
-          <h1 class="text-lg md:text-xl font-black mt-1 text-white tracking-tight">8-Cross 決策模擬系統：真實比賽跨月推進、人料產能平衡與多方案推演</h1>
+
+          <!-- Dual Mode Toggle (De-clutter Solution) -->
+          <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-700/80 text-xs shadow-inner">
+            <button id="btn-mode-simple" onclick="switchViewMode('simple')" class="px-3 py-1 rounded-lg font-bold transition bg-emerald-600 text-white shadow">
+              ⚡ 簡約作戰模式
+            </button>
+            <button id="btn-mode-expert" onclick="switchViewMode('expert')" class="px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white">
+              📊 專家詳細對帳
+            </button>
+          </div>
         </div>
 
         <!-- Profile Toolbar -->
-        <div class="flex flex-wrap gap-2 items-center bg-slate-950/90 p-1.5 rounded-xl border border-slate-700/80 shadow shrink-0">
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="font-bold text-slate-400">當前方案：</span>
+        <div class="flex flex-wrap gap-2 items-center bg-slate-950/90 p-1.5 rounded-xl border border-slate-700/80 shadow shrink-0 text-xs">
+          <div class="flex items-center gap-1">
+            <span class="font-bold text-slate-400">方案：</span>
             <select id="sel-profile" onchange="onSwitchProfile()" class="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1 font-bold text-white focus:ring-2 focus:ring-blue-500 text-xs">
               <!-- Populated by JS -->
             </select>
           </div>
-          <button onclick="openNewProfileModal()" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-1 shadow">
-            <span>+</span> 新增方案
+          <button onclick="openNewProfileModal()" class="px-2.5 py-1 font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition flex items-center gap-1 shadow">
+            <span>+</span> 新增
           </button>
-          <button onclick="deleteCurrentProfile()" class="px-2 py-1 text-xs font-bold rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 transition">
+          <button onclick="deleteCurrentProfile()" class="px-2 py-1 font-bold rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-700 transition">
             刪除
           </button>
-          <button onclick="resetProfileToM1()" class="px-2 py-1 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
-            🔄 重設回第1月
+          <button onclick="resetProfileToM1()" class="px-2 py-1 font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
+            🔄 回第1月
           </button>
         </div>
       </div>
 
       <!-- MONTH PROGRESS TIMELINE STEPPER -->
-      <div class="mt-3 pt-3 border-t border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div class="mt-2.5 pt-2.5 border-t border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
         <div class="flex items-center gap-2 shrink-0">
-          <span class="text-xs font-bold text-slate-400">競賽月程：</span>
+          <span class="text-xs font-bold text-slate-400">月程：</span>
           <div class="flex items-center gap-1">
             <button onclick="jumpMonth(-1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold border border-slate-700 transition">◀ 上月</button>
             <button onclick="jumpMonth(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold border border-slate-700 transition">下月 ▶</button>
@@ -106,72 +111,71 @@
         </div>
 
         <!-- Horizontal Scrollable Timeline Buttons -->
-        <div id="timeline-stepper" class="timeline-container flex items-center gap-1.5 overflow-x-auto w-full py-1">
-          <!-- Populated by JS for M1 ~ M12 (expandable) -->
+        <div id="timeline-stepper" class="timeline-container flex items-center gap-1.5 overflow-x-auto w-full py-0.5">
+          <!-- Populated by JS for M1 ~ M12 -->
         </div>
 
         <!-- Big Advance Button -->
         <button onclick="triggerMonthSettlement()" class="shrink-0 px-4 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs md:text-sm rounded-xl shadow-lg transition flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0">
-          <span>🏆</span> 結算本月並推進至第 <span id="next-month-lbl" class="font-mono underline">7</span> 個月
+          <span>🏆</span> 結算並推進至第 <span id="next-month-lbl" class="font-mono underline">7</span> 個月
         </button>
       </div>
     </div>
   </header>
 
   <!-- MAIN WRAPPER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
     <!-- TWO-WAY BALANCED CAPACITY CALCULATOR BANNER (FEATURE FOCUS) -->
-    <div id="sec-core-decision" class="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 border border-indigo-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-700/80 pb-3">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center font-black text-indigo-300 text-lg">⚖</div>
+    <div id="sec-core-decision" class="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 border border-indigo-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-3.5">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2.5 border-b border-slate-700/80 pb-2.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center font-black text-indigo-300 text-base">⚖</div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-base sm:text-lg font-bold text-white">產能與原料雙向平衡聯動器</h2>
-              <span id="balance-pill" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">★ 完美產銷平衡</span>
+              <h2 class="text-base font-bold text-white">產能與原料雙向平衡聯動器</h2>
+              <span id="balance-pill" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">★ 完美平衡</span>
             </div>
-            <p class="text-xs text-slate-400">依生產人力與能力值精算「人力加工產能」，一鍵反推「滿足此產能所需原料」，並支援客製化良率。</p>
+            <p class="text-[11px] text-slate-400">依生產人力即時反推滿足產能所需原料，告別工時與材料浪費。</p>
           </div>
         </div>
 
         <!-- Customizable Yield Input -->
-        <div class="flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-700 shrink-0 text-xs">
-          <span class="text-slate-300 font-bold">客製化生產良率：</span>
+        <div class="flex items-center gap-2 bg-slate-950/80 px-3 py-1 rounded-xl border border-slate-700 shrink-0 text-xs">
+          <span class="text-slate-300 font-bold">生產良率：</span>
           <div class="flex items-center gap-1">
             <input type="number" id="inp-yield-custom" min="50" max="100" step="0.1" value="73.8" oninput="onCustomYieldChange()"
-              class="w-16 bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-center font-mono font-bold text-emerald-300 text-sm focus:ring-2 focus:ring-emerald-500">
+              class="w-14 bg-slate-800 border border-slate-600 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-300 text-sm focus:ring-2 focus:ring-emerald-500">
             <span class="text-slate-400 font-bold">%</span>
           </div>
-          <span class="text-[10px] text-slate-500 hidden sm:inline">(官方M6基準73.8%)</span>
         </div>
       </div>
 
-      <!-- Capacity & Balanced Material Comparison 4-Card Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <!-- Capacity & Balanced Material 3-Card Grid (Crisp & Clean) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <!-- 1. Human Processing Capacity -->
-        <div class="bg-slate-900/90 border border-slate-750 p-3.5 rounded-xl space-y-1">
+        <div class="bg-slate-900/90 border border-slate-750 p-3 rounded-xl space-y-1">
           <div class="flex justify-between items-center text-xs text-slate-400">
             <span>預估人力加工能</span>
-            <span class="text-indigo-400 font-bold" id="box-human-workers">10 人</span>
+            <span class="text-indigo-400 font-bold font-mono" id="box-human-workers">10 人</span>
           </div>
-          <div class="text-xl sm:text-2xl font-black text-indigo-300" id="box-human-cap">
-            369 <span class="text-xs font-normal text-slate-400">台/月</span>
+          <div class="text-2xl font-black text-indigo-300 font-mono" id="box-human-cap">
+            369 <span class="text-xs font-normal text-slate-400 font-sans">台/月</span>
           </div>
           <div class="text-[11px] text-slate-400 flex justify-between">
-            <span>團隊平均能力：</span>
+            <span>平均能力：</span>
             <strong class="text-indigo-300 font-mono" id="box-human-avg-ab">0.74</strong>
           </div>
         </div>
 
         <!-- 2. Required Raw Material Pairs (Reverse Calculation) -->
-        <div class="bg-slate-900/90 border border-amber-500/40 p-3.5 rounded-xl space-y-1 relative overflow-hidden">
+        <div class="bg-slate-900/90 border border-amber-500/40 p-3 rounded-xl space-y-1 relative overflow-hidden">
           <div class="flex justify-between items-center text-xs text-amber-300 font-bold">
             <span>滿足人力所需原料</span>
-            <span class="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/30">反推基準</span>
+            <span class="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300">反推基準</span>
           </div>
-          <div class="text-xl sm:text-2xl font-black text-amber-300" id="box-req-pairs">
-            500 <span class="text-xs font-normal text-slate-400">套原料</span>
+          <div class="text-2xl font-black text-amber-300 font-mono" id="box-req-pairs">
+            500 <span class="text-xs font-normal text-slate-400 font-sans">套</span>
           </div>
           <div class="text-[11px] text-slate-400 flex justify-between">
             <span>需 A01+A02 總數：</span>
@@ -179,29 +183,14 @@
           </div>
         </div>
 
-        <!-- 3. Scheduled Material Yielded Output -->
-        <div class="bg-slate-900/90 border border-slate-750 p-3.5 rounded-xl space-y-1">
-          <div class="flex justify-between items-center text-xs text-slate-400">
-            <span>原料投遞產出量</span>
-            <span class="text-emerald-400 font-bold" id="box-actual-pairs">500 套</span>
-          </div>
-          <div class="text-xl sm:text-2xl font-black text-emerald-300" id="box-yield-cap">
-            369 <span class="text-xs font-normal text-slate-400">台/月</span>
-          </div>
-          <div class="text-[11px] text-slate-400 flex justify-between">
-            <span>良率折算後產出：</span>
-            <strong class="text-emerald-300 font-mono" id="box-actual-yield">73.8%</strong>
-          </div>
-        </div>
-
-        <!-- 4. Final Effective Output -->
-        <div class="bg-slate-900/90 border border-emerald-500/40 p-3.5 rounded-xl space-y-1">
+        <!-- 3. Final Effective Output -->
+        <div class="bg-slate-900/90 border border-emerald-500/40 p-3 rounded-xl space-y-1">
           <div class="flex justify-between items-center text-xs text-emerald-300 font-bold">
             <span>最終完工良品產能</span>
             <span class="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300">MIN(人, 料)</span>
           </div>
-          <div class="text-xl sm:text-2xl font-black text-white" id="box-effective-cap">
-            369 <span class="text-xs font-normal text-slate-400">台/月</span>
+          <div class="text-2xl font-black text-white font-mono" id="box-effective-cap">
+            369 <span class="text-xs font-normal text-slate-400 font-sans">台/月</span>
           </div>
           <div class="text-[11px] text-slate-400 flex justify-between">
             <span>當期出貨率 (90%/92%)：</span>
@@ -211,102 +200,94 @@
       </div>
 
       <!-- Quick Action Buttons & Balance Diagnosis Bar -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/70 p-3 rounded-xl border border-slate-800 text-xs">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 text-xs">
         <div class="flex items-center gap-2">
-          <span class="font-bold text-slate-400">平衡診斷：</span>
-          <span id="box-balance-diagnosis" class="text-emerald-300 font-medium">★ 人力加工能與原料投產完全匹配，產能發揮 100%，無任何原料或工時浪費。</span>
+          <span class="font-bold text-slate-400 shrink-0">平衡診斷：</span>
+          <span id="box-balance-diagnosis" class="text-emerald-300 font-medium truncate">★ 人力加工能與原料投產完全匹配，產能發揮 100%。</span>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <button onclick="applyAutoBalancedPairs()" class="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow">
-            <span>⚡</span> 一鍵填入「滿足人力所需原料」
-          </button>
-        </div>
+        <button onclick="applyAutoBalancedPairs()" class="shrink-0 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow">
+          <span>⚡</span> 一鍵填入「滿足人力所需原料」
+        </button>
       </div>
     </div>
 
     <!-- MAIN TWO-COLUMN WORKSPACE: LEFT (INPUT MODULES) & RIGHT (FINANCIAL AUDIT TABS) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
       <!-- LEFT COLUMN: DECISION MODULES (7 Cols) -->
-      <div class="lg:col-span-7 space-y-6">
+      <div class="lg:col-span-7 space-y-5">
 
         <!-- MODULE A: PRODUCTION DEPARTMENT (ISOLATED & EMPHASIZED) -->
-        <div class="bg-gradient-to-b from-slate-900 to-slate-850 border-2 border-emerald-500/40 rounded-2xl p-5 shadow-lg space-y-4">
-          <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300 font-bold">🏭</div>
-              <div>
-                <h2 class="text-base font-bold text-white flex items-center gap-2">
-                  【生產製造部專屬核心空間】
-                  <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">生產獨立隔開</span>
-                </h2>
-                <p class="text-xs text-slate-400">產線配置、生產工人招聘、生產專屬培訓、原料投料排程與原料預購管理。</p>
-              </div>
+        <div class="bg-gradient-to-b from-slate-900 to-slate-850 border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3.5">
+          <div class="flex items-center justify-between border-b border-emerald-500/30 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🏭</span>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                生產製造部專屬空間
+                <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">生產獨立</span>
+              </h2>
             </div>
             <span class="text-xs text-emerald-300 font-mono font-bold" id="staffing-status-a">10 / 20 人</span>
           </div>
 
-          <!-- 1. Factory & Production Lines -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
-              <label class="text-slate-400 block mb-1">廠房數量 (座)</label>
+          <!-- Production Lines Compact (Collapsible or Clean) -->
+          <div class="grid grid-cols-4 gap-2 text-xs">
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-center">
+              <label class="text-slate-400 block text-[10px] mb-0.5">廠房 (座)</label>
               <input type="number" id="inp-factory" min="1" max="5" value="1" oninput="onInputDataChange()"
-                class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
+                class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 font-bold text-center text-white text-xs">
             </div>
-            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
-              <label class="text-slate-400 block mb-1">倉庫數量 (座)</label>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-center">
+              <label class="text-slate-400 block text-[10px] mb-0.5">倉庫 (座)</label>
               <input type="number" id="inp-warehouse" min="1" max="5" value="1" oninput="onInputDataChange()"
-                class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
+                class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 font-bold text-center text-white text-xs">
             </div>
-            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
-              <label class="text-slate-400 block mb-1">A產線數量 (條)</label>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-center">
+              <label class="text-slate-400 block text-[10px] mb-0.5">A產線 (條)</label>
               <input type="number" id="inp-lines-a" min="0" max="6" value="2" oninput="onInputDataChange()"
-                class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
+                class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 font-bold text-center text-white text-xs">
             </div>
-            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
-              <label class="text-slate-400 block mb-1">B產線數量 (條)</label>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-center">
+              <label class="text-slate-400 block text-[10px] mb-0.5">B產線 (條)</label>
               <input type="number" id="inp-lines-b" min="0" max="6" value="0" oninput="onInputDataChange()"
-                class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-slate-400 focus:ring-2 focus:ring-emerald-500">
+                class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 font-bold text-center text-slate-400 text-xs">
             </div>
           </div>
 
-          <!-- 2. Production Workers Recruitment & Ability Status -->
-          <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+          <!-- Production Workers Recruitment -->
+          <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
             <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-emerald-400">生產工人招聘 (Direct Labor)</span>
-              <span class="text-slate-400">底薪：1類 $28K / 2類 $35K / 3類 $52.5K</span>
+              <span class="font-bold text-emerald-400">生產工人招聘 (人)</span>
+              <span class="text-slate-400 text-[11px]">底薪：1類$2.8萬 / 2類$3.5萬 / 3類$5.25萬</span>
             </div>
-            <div class="grid grid-cols-3 gap-3 text-xs">
-              <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-1"><span>1類工人</span><span class="text-emerald-400" id="txt-ab-a1">0.54</span></div>
+            <div class="grid grid-cols-3 gap-2.5 text-xs">
+              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>1類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a1">0.54</span></div>
                 <input type="number" id="staff-prod-a1" min="0" max="30" value="1" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
-                <span class="text-[10px] text-slate-500 mt-0.5 block">基本加工能力</span>
+                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
               </div>
-              <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-1"><span>2類工人</span><span class="text-emerald-400" id="txt-ab-a2">0.70</span></div>
+              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>2類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a2">0.70</span></div>
                 <input type="number" id="staff-prod-a2" min="0" max="30" value="7" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
-                <span class="text-[10px] text-slate-500 mt-0.5 block">高性價主力 (+0.05)</span>
+                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
               </div>
-              <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-center">
-                <div class="flex justify-between text-slate-400 mb-1"><span>3類工人</span><span class="text-emerald-400" id="txt-ab-a3">0.86</span></div>
+              <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                <div class="flex justify-between text-slate-400 mb-0.5 text-[11px]"><span>3類工人</span><span class="text-emerald-400 font-mono" id="txt-ab-a3">0.86</span></div>
                 <input type="number" id="staff-prod-a3" min="0" max="30" value="2" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white focus:ring-2 focus:ring-emerald-500">
-                <span class="text-[10px] text-slate-500 mt-0.5 block">資深高階工人</span>
+                  class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-1 font-bold text-center text-white">
               </div>
             </div>
           </div>
 
-          <!-- 3. Production Dedicated Training Level -->
-          <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-xs">
+          <!-- Production Training Level -->
+          <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
             <div>
-              <span class="font-bold text-amber-300 block">生產部專屬教育訓練決策</span>
-              <span class="text-slate-400 text-[11px]">本月實施培訓，下期永久累積（實測1類+0.02 / 2類+0.05 / 3類+0.08）</span>
+              <span class="font-bold text-amber-300">生產部專屬培訓：</span>
+              <span class="text-slate-400 text-[11px]">(實測1類+0.02 / 2類+0.05 永久累積)</span>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <select id="train-prod-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-600 rounded-lg px-2.5 py-1 text-slate-200 font-bold focus:ring-2 focus:ring-amber-500">
-                <option value="0">0級 (無培訓支出)</option>
+            <div class="flex items-center gap-2">
+              <select id="train-prod-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-600 rounded px-2 py-0.5 text-slate-200 font-bold text-xs">
+                <option value="0">0級 (無)</option>
                 <option value="1">1級 (+0.02/+0.05, 10萬)</option>
                 <option value="2">2級 (+0.04/+0.10, 20萬)</option>
                 <option value="3">3級 (+0.06/+0.15, 30萬)</option>
@@ -315,229 +296,204 @@
             </div>
           </div>
 
-          <!-- 4. Raw Material Input Pairs & Ratio -->
-          <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2.5">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-emerald-400">當月實際投產原料套數與配方</span>
-              <span class="text-slate-400">1套原料 = 2個單位 (A01 + A02)</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="text-slate-300 font-medium block mb-1">本月實際投產套數 (對)</label>
-                <input type="number" id="inp-pairs-a" min="0" max="2500" value="500" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-slate-600 rounded px-2.5 py-1.5 font-bold text-center text-white text-base focus:ring-2 focus:ring-emerald-500">
-                <div class="flex justify-between text-[11px] text-slate-400 mt-1">
-                  <span id="txt-mat-summary">耗用原料 1,000 個</span>
-                  <span id="txt-avail-mat-warning" class="text-emerald-400">庫存充裕</span>
-                </div>
+          <!-- Raw Material Actual Scheduling & Pre-Order -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <!-- Actual Scheduling -->
+            <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-emerald-400">本月實際投產 (套)</span>
+                <span class="text-[10px] text-slate-400">1套 = A01 + A02</span>
               </div>
-              <div>
-                <label class="text-slate-300 font-medium block mb-1">高品質原料 (A02) 比例</label>
-                <select id="inp-ratio-a" onchange="onInputDataChange()" class="w-full bg-slate-850 border border-slate-600 rounded px-2.5 py-1.5 font-bold text-slate-200">
-                  <option value="0.333">低1:高1 (33.3% 高階)</option>
-                  <option value="0.5" selected>低1:高1 (50.0% 高階-標準)</option>
-                  <option value="0.58">低1:高1.4 (58.3% 高階加強)</option>
-                  <option value="0.667">低1:高2 (66.7% 高階)</option>
-                </select>
-                <span class="text-[10px] text-slate-500 mt-1 block">影響產品品質等級與市場吸納量</span>
+              <input type="number" id="inp-pairs-a" min="0" max="2500" value="500" oninput="onInputDataChange()"
+                class="w-full bg-slate-850 border border-slate-600 rounded px-2 py-1 font-bold text-center text-white text-sm focus:ring-2 focus:ring-emerald-500">
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span id="txt-mat-summary">耗用 1,000 個</span>
+                <span id="txt-avail-mat-warning" class="text-emerald-400">庫存充足</span>
               </div>
             </div>
-          </div>
 
-          <!-- 5. Raw Material Pre-Order (Arrives Next Month) -->
-          <div class="p-3.5 bg-indigo-950/40 rounded-xl border border-indigo-500/30 space-y-2">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-indigo-300 flex items-center gap-1.5">
-                <span>📦</span> 本期預購原料（提前1月預購，下月初到貨入庫）
-              </span>
-              <span class="text-indigo-400 font-mono text-[11px]" id="txt-preorder-arrival-info">將於第 7 月到貨</span>
-            </div>
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="text-slate-400 block mb-1">預購 A01 (低品質, ~1,002元)</label>
+            <!-- Pre-order Next Month -->
+            <div class="p-2.5 bg-indigo-950/40 rounded-xl border border-indigo-500/30 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-indigo-300">預購下月原料 (套)</span>
+                <span class="text-indigo-400 text-[10px] font-mono" id="txt-preorder-arrival-info">第7月到貨</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
                 <input type="number" id="inp-preorder-a01" min="0" max="5000" value="500" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-indigo-700/60 rounded px-2 py-1 font-bold text-center text-indigo-200 focus:ring-2 focus:ring-indigo-500">
-              </div>
-              <div>
-                <label class="text-slate-400 block mb-1">預購 A02 (高品質, ~1,203元)</label>
+                  placeholder="A01" class="w-full bg-slate-850 border border-indigo-700/60 rounded px-1.5 py-1 font-bold text-center text-indigo-200 text-xs">
                 <input type="number" id="inp-preorder-a02" min="0" max="5000" value="500" oninput="onInputDataChange()"
-                  class="w-full bg-slate-850 border border-indigo-700/60 rounded px-2 py-1 font-bold text-center text-indigo-200 focus:ring-2 focus:ring-indigo-500">
+                  placeholder="A02" class="w-full bg-slate-850 border border-indigo-700/60 rounded px-1.5 py-1 font-bold text-center text-indigo-200 text-xs">
               </div>
-            </div>
-            <div class="flex justify-between text-[11px] text-slate-400">
-              <span>預估預購貨款（下月應付帳款付現）：</span>
-              <strong class="text-indigo-300 font-mono" id="txt-preorder-total-cost">$1,102,500 元</strong>
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>下月應付貨款：</span>
+                <strong class="text-indigo-300 font-mono" id="txt-preorder-total-cost">$110.3 萬</strong>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- MODULE B: BACKEND 4 DEPARTMENTS (SALES FORCE) & SEPARATE TRAINING -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <!-- MODULE B: BACKEND 4 DEPARTMENTS (COLLAPSIBLE FOR DE-CLUTTERING) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
           <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
             <div>
               <h2 class="text-base font-bold text-white flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                【四大後勤部門】招聘、專屬培訓與銷售力木桶短板
+                四大後勤部門（銷售承載短板）
               </h2>
-              <p class="text-xs text-slate-400">行銷、管理、財務、技術四部門獨立配置與培訓，維持最高吸納力。</p>
+              <p class="text-[11px] text-slate-400">行銷、管理、財務、技術四部門銷售力短板監控。</p>
             </div>
-            <span class="text-xs text-amber-400 font-bold" id="lbl-min-sales">有效短板：4,032 K</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-amber-400 font-bold font-mono" id="lbl-min-sales">有效短板：4,032 K</span>
+              <button onclick="toggleDeptDetails()" id="btn-toggle-depts" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition">
+                展開細項 ▼
+              </button>
+            </div>
           </div>
 
-          <!-- 4 Departments Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <!-- Compact Summary View (Default in Simple Mode) -->
+          <div id="dept-summary-row" class="grid grid-cols-4 gap-2 text-center text-xs">
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+              <span class="text-blue-400 block text-[10px]">行銷 (4人)</span>
+              <strong class="text-white font-mono text-xs" id="sales-mkt-summary">4,032 K</strong>
+            </div>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+              <span class="text-indigo-400 block text-[10px]">管理 (3人)</span>
+              <strong class="text-white font-mono text-xs" id="sales-mgmt-summary">4,032 K</strong>
+            </div>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+              <span class="text-emerald-400 block text-[10px]">財務 (2人)</span>
+              <strong class="text-white font-mono text-xs" id="sales-fin-summary">4,200 K</strong>
+            </div>
+            <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+              <span class="text-purple-400 block text-[10px]">技術 (4人)</span>
+              <strong class="text-white font-mono text-xs" id="sales-tech-summary">4,032 K</strong>
+            </div>
+          </div>
+
+          <!-- Expanded 4 Departments Grid (Hidden by default in Simple Mode) -->
+          <div id="dept-details-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
             <!-- Marketing -->
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-blue-400">行銷部門 (Marketing)</span>
+                <span class="font-bold text-blue-400">行銷部門</span>
                 <span id="sales-mkt" class="font-bold text-white font-mono">4,032 K</span>
               </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <div><label class="text-[10px] text-slate-400 block text-center">1類 ($28K)</label><input type="number" id="staff-mkt-1" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">2類 ($35K)</label><input type="number" id="staff-mkt-2" min="0" max="20" value="4" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">3類 ($52.5K)</label><input type="number" id="staff-mkt-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
+              <div class="grid grid-cols-3 gap-1">
+                <div><label class="text-[9px] text-slate-400 block text-center">1類</label><input type="number" id="staff-mkt-1" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">2類</label><input type="number" id="staff-mkt-2" min="0" max="20" value="4" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">3類</label><input type="number" id="staff-mkt-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
               </div>
-              <div class="flex items-center justify-between pt-1 border-t border-slate-850 text-[11px]">
-                <span class="text-slate-400">行銷培訓：</span>
-                <select id="train-mkt-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200">
-                  <option value="0">0級 (無)</option>
-                  <option value="1">1級 (+0.02/+0.05, 20萬)</option>
-                  <option value="2">2級 (+0.04/+0.10, 40萬)</option>
-                  <option value="3">3級 (+0.06/+0.15, 60萬)</option>
+              <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">培訓：</span>
+                <select id="train-mkt-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-slate-200 text-xs">
+                  <option value="0">0級</option><option value="1">1級 (20萬)</option><option value="2">2級 (40萬)</option><option value="3">3級 (60萬)</option>
                 </select>
               </div>
             </div>
 
             <!-- Management -->
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-indigo-400">管理部門 (Management)</span>
+                <span class="font-bold text-indigo-400">管理部門</span>
                 <span id="sales-mgmt" class="font-bold text-white font-mono">4,032 K</span>
               </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <div><label class="text-[10px] text-slate-400 block text-center">1類 ($28K)</label><input type="number" id="staff-mgmt-1" min="0" max="20" value="2" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">2類 ($35K)</label><input type="number" id="staff-mgmt-2" min="0" max="20" value="1" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">3類 ($52.5K)</label><input type="number" id="staff-mgmt-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
+              <div class="grid grid-cols-3 gap-1">
+                <div><label class="text-[9px] text-slate-400 block text-center">1類</label><input type="number" id="staff-mgmt-1" min="0" max="20" value="2" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">2類</label><input type="number" id="staff-mgmt-2" min="0" max="20" value="1" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">3類</label><input type="number" id="staff-mgmt-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
               </div>
-              <div class="flex items-center justify-between pt-1 border-t border-slate-850 text-[11px]">
-                <span class="text-slate-400">管理培訓：</span>
-                <select id="train-mgmt-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200">
-                  <option value="0">0級 (無)</option>
-                  <option value="1">1級 (+0.02/+0.05, 15萬)</option>
-                  <option value="2">2級 (+0.04/+0.10, 30萬)</option>
-                  <option value="3">3級 (+0.06/+0.15, 45萬)</option>
+              <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">培訓：</span>
+                <select id="train-mgmt-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-slate-200 text-xs">
+                  <option value="0">0級</option><option value="1">1級 (15萬)</option><option value="2">2級 (30萬)</option><option value="3">3級 (45萬)</option>
                 </select>
               </div>
             </div>
 
             <!-- Finance -->
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-emerald-400">財務部門 (Finance)</span>
+                <span class="font-bold text-emerald-400">財務部門</span>
                 <span id="sales-fin" class="font-bold text-white font-mono">4,200 K</span>
               </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <div><label class="text-[10px] text-slate-400 block text-center">1類 ($30K)</label><input type="number" id="staff-fin-1" min="0" max="20" value="2" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">2類 ($37.5K)</label><input type="number" id="staff-fin-2" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">3類 ($56.25K)</label><input type="number" id="staff-fin-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
+              <div class="grid grid-cols-3 gap-1">
+                <div><label class="text-[9px] text-slate-400 block text-center">1類</label><input type="number" id="staff-fin-1" min="0" max="20" value="2" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">2類</label><input type="number" id="staff-fin-2" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">3類</label><input type="number" id="staff-fin-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
               </div>
-              <div class="flex items-center justify-between pt-1 border-t border-slate-850 text-[11px]">
-                <span class="text-slate-400">財務培訓：</span>
-                <select id="train-fin-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200">
-                  <option value="0">0級 (無)</option>
-                  <option value="1">1級 (+0.02/+0.05, 25萬)</option>
-                  <option value="2">2級 (+0.04/+0.10, 50萬)</option>
-                  <option value="3">3級 (+0.06/+0.15, 75萬)</option>
+              <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">培訓：</span>
+                <select id="train-fin-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-slate-200 text-xs">
+                  <option value="0">0級</option><option value="1">1級 (25萬)</option><option value="2">2級 (50萬)</option><option value="3">3級 (75萬)</option>
                 </select>
               </div>
             </div>
 
             <!-- Technology -->
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-purple-400">技術部門 (Technology)</span>
+                <span class="font-bold text-purple-400">技術部門</span>
                 <span id="sales-tech" class="font-bold text-white font-mono">4,032 K</span>
               </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <div><label class="text-[10px] text-slate-400 block text-center">1類 ($32K)</label><input type="number" id="staff-tech-1" min="0" max="20" value="4" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">2類 ($40K)</label><input type="number" id="staff-tech-2" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
-                <div><label class="text-[10px] text-slate-400 block text-center">3類 ($60K)</label><input type="number" id="staff-tech-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1.5 py-1 text-center font-bold text-white"></div>
+              <div class="grid grid-cols-3 gap-1">
+                <div><label class="text-[9px] text-slate-400 block text-center">1類</label><input type="number" id="staff-tech-1" min="0" max="20" value="4" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">2類</label><input type="number" id="staff-tech-2" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
+                <div><label class="text-[9px] text-slate-400 block text-center">3類</label><input type="number" id="staff-tech-3" min="0" max="20" value="0" oninput="onInputDataChange()" class="w-full bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-white text-xs"></div>
               </div>
-              <div class="flex items-center justify-between pt-1 border-t border-slate-850 text-[11px]">
-                <span class="text-slate-400">技術培訓：</span>
-                <select id="train-tech-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200">
-                  <option value="0">0級 (無)</option>
-                  <option value="1">1級 (+0.02/+0.05, 30萬)</option>
-                  <option value="2">2級 (+0.04/+0.10, 60萬)</option>
-                  <option value="3">3級 (+0.06/+0.15, 90萬)</option>
+              <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">培訓：</span>
+                <select id="train-tech-lvl" onchange="onInputDataChange()" class="bg-slate-850 border border-slate-700 rounded px-1 py-0.5 text-slate-200 text-xs">
+                  <option value="0">0級</option><option value="1">1級 (30萬)</option><option value="2">2級 (60萬)</option><option value="3">3級 (90萬)</option>
                 </select>
               </div>
             </div>
           </div>
-
-          <!-- Total Training Cost Summary -->
-          <div class="flex justify-between items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-xs">
-            <span class="text-slate-400">全公司本期教育訓練費用總計（流量費用）：</span>
-            <strong class="text-amber-400 font-mono text-sm" id="total-training-fee">$0 元</strong>
-          </div>
         </div>
 
-        <!-- MODULE C: PRICING & MARKET AVG COMPARISON -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <!-- MODULE C: PRICING & MARKET BENCHMARKS -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
           <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
             <h2 class="text-base font-bold text-white flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              【市場定價策略】雙市場定價與市場平均售價動態比對 (USD)
+              雙市場定價策略 (USD)
             </h2>
-            <span class="text-xs text-slate-400">當前匯率：<strong id="lbl-fx-rate" class="text-emerald-400 font-mono">29.83</strong> NTD/USD</span>
+            <span class="text-xs text-slate-400">匯率：<strong id="lbl-fx-rate" class="text-emerald-400 font-mono">29.83</strong></span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="grid grid-cols-2 gap-3 text-xs">
             <!-- Emerging -->
-            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
-              <div class="font-bold text-blue-400 border-b border-slate-800 pb-1 flex justify-between">
-                <span>新興市場 (Emerging)</span>
-                <span id="alloc-em-lbl" class="text-slate-400">分配 60%</span>
+            <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+              <div class="font-bold text-blue-400 flex justify-between">
+                <span>新興市場</span>
+                <span id="alloc-em-lbl" class="text-slate-400 text-[10px]">分配 60%</span>
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-[11px] text-slate-400 block mb-1">定價 (USD)</label>
-                  <input type="number" id="inp-price-em" min="150" max="450" value="275" oninput="onInputDataChange()"
-                    class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white">
-                </div>
-                <div>
-                  <label class="text-[11px] text-slate-400 block mb-1">出貨比重 (%)</label>
-                  <input type="number" id="inp-alloc-em" min="0" max="100" value="60" oninput="onInputDataChange()"
-                    class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white">
-                </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 text-xs">$</span>
+                <input type="number" id="inp-price-em" min="150" max="450" value="275" oninput="onInputDataChange()"
+                  class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white text-sm">
+                <span class="text-slate-400 text-[11px]">USD</span>
               </div>
-              <div class="text-[11px] space-y-0.5 pt-1 border-t border-slate-850">
-                <div class="flex justify-between"><span class="text-slate-400">市場平均售價:</span><strong id="lbl-mkt-avg-em" class="text-amber-300 font-mono">$264.60</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">您的定價偏差:</span><span id="lbl-mkt-diff-em" class="font-bold text-emerald-400">+10.40 (+3.9%)</span></div>
+              <div class="flex justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">均價 <strong id="lbl-mkt-avg-em" class="text-amber-300 font-mono">$264.6</strong></span>
+                <span id="lbl-mkt-diff-em" class="font-bold text-emerald-400 font-mono">+10.4 (+3.9%)</span>
               </div>
             </div>
 
             <!-- Developed -->
-            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
-              <div class="font-bold text-purple-400 border-b border-slate-800 pb-1 flex justify-between">
-                <span>成熟市場 (Developed)</span>
-                <span id="alloc-dev-lbl" class="text-slate-400">分配 40%</span>
+            <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+              <div class="font-bold text-purple-400 flex justify-between">
+                <span>成熟市場</span>
+                <span id="alloc-dev-lbl" class="text-slate-400 text-[10px]">分配 40%</span>
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-[11px] text-slate-400 block mb-1">定價 (USD)</label>
-                  <input type="number" id="inp-price-dev" min="150" max="500" value="300" oninput="onInputDataChange()"
-                    class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white">
-                </div>
-                <div>
-                  <label class="text-[11px] text-slate-400 block mb-1">出貨比重 (%)</label>
-                  <input type="number" id="inp-alloc-dev" min="0" max="100" value="40" oninput="onInputDataChange()"
-                    class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white">
-                </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 text-xs">$</span>
+                <input type="number" id="inp-price-dev" min="150" max="500" value="300" oninput="onInputDataChange()"
+                  class="w-full bg-slate-850 border border-slate-700 rounded px-2 py-1 font-bold text-center text-white text-sm">
+                <span class="text-slate-400 text-[11px]">USD</span>
               </div>
-              <div class="text-[11px] space-y-0.5 pt-1 border-t border-slate-850">
-                <div class="flex justify-between"><span class="text-slate-400">市場平均售價:</span><strong id="lbl-mkt-avg-dev" class="text-amber-300 font-mono">$293.60</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">您的定價偏差:</span><span id="lbl-mkt-diff-dev" class="font-bold text-emerald-400">+6.40 (+2.2%)</span></div>
+              <div class="flex justify-between text-[11px] pt-1 border-t border-slate-850">
+                <span class="text-slate-400">均價 <strong id="lbl-mkt-avg-dev" class="text-amber-300 font-mono">$293.6</strong></span>
+                <span id="lbl-mkt-diff-dev" class="font-bold text-emerald-400 font-mono">+6.4 (+2.2%)</span>
               </div>
             </div>
           </div>
@@ -545,101 +501,90 @@
 
       </div>
 
-      <!-- RIGHT COLUMN: Output Tabs, Inventory Pool & Financial Statements (5 Cols) -->
-      <div class="lg:col-span-5 space-y-6">
+      <!-- RIGHT COLUMN: EXECUTIVE KPI SUMMARY & FINANCIAL TABS (5 Cols) -->
+      <div class="lg:col-span-5 space-y-4">
 
-        <!-- Tabs Navigation (4 Comprehensive Tabs) -->
-        <div class="flex border-b border-slate-700 bg-slate-900/90 p-1.5 rounded-xl gap-1 text-xs font-bold shadow">
-          <button id="tab-btn-audit" onclick="switchOutputTab('audit')" class="flex-1 py-2 px-1 rounded-lg tab-active transition text-center">
+        <!-- EXECUTIVE KPI CARDS (CLEAN & BEAUTIFUL IN SIMPLE MODE) -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-3 rounded-2xl border border-slate-800 shadow text-center">
+            <span class="text-[11px] text-slate-400 block mb-0.5">預估營收</span>
+            <strong class="text-sm sm:text-base font-black text-white font-mono" id="kpi-rev">$302.7 萬</strong>
+          </div>
+          <div class="bg-gradient-to-b from-emerald-950/40 to-slate-950 p-3 rounded-2xl border border-emerald-500/40 shadow text-center">
+            <span class="text-[11px] text-emerald-400 block mb-0.5 font-bold">預估淨利</span>
+            <strong class="text-sm sm:text-base font-black text-emerald-300 font-mono" id="kpi-np">+$20.7 萬</strong>
+          </div>
+          <div class="bg-gradient-to-b from-blue-950/40 to-slate-950 p-3 rounded-2xl border border-blue-500/40 shadow text-center">
+            <span class="text-[11px] text-blue-400 block mb-0.5 font-bold">期末安全現金</span>
+            <strong class="text-sm sm:text-base font-black text-blue-300 font-mono" id="kpi-cash">$562.7 萬</strong>
+          </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-slate-700 bg-slate-900/90 p-1 rounded-xl gap-1 text-xs font-bold shadow">
+          <button id="tab-btn-audit" onclick="switchOutputTab('audit')" class="flex-1 py-1.5 px-1 rounded-lg tab-active transition text-center">
             損益核對 (P&L)
           </button>
-          <button id="tab-btn-inventory" onclick="switchOutputTab('inventory')" class="flex-1 py-2 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
-            製成品庫存 (15項)
+          <button id="tab-btn-inventory" onclick="switchOutputTab('inventory')" class="flex-1 py-1.5 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
+            製成品 (15項)
           </button>
-          <button id="tab-btn-rawmat" onclick="switchOutputTab('rawmat')" class="flex-1 py-2 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
+          <button id="tab-btn-rawmat" onclick="switchOutputTab('rawmat')" class="flex-1 py-1.5 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
             原料變動 (18項)
           </button>
-          <button id="tab-btn-bs" onclick="switchOutputTab('bs')" class="flex-1 py-2 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
-            資產負債 (BS/CF)
+          <button id="tab-btn-bs" onclick="switchOutputTab('bs')" class="flex-1 py-1.5 px-1 rounded-lg text-slate-400 hover:text-white transition text-center">
+            資產負債 (BS)
           </button>
         </div>
 
         <!-- TAB 1: P&L Side-by-Side Audit -->
-        <div id="tab-content-audit" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <div id="tab-content-audit" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
           <div class="border-b border-slate-700/60 pb-2 flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-white">財務損益逐筆精確核對 (P&L Audit)</h2>
-              <p class="text-[11px] text-slate-400">加權平均銷貨成本與 50% 應收 / 4% 呆帳完全閉環</p>
-            </div>
-            <span id="calib-match-rate" class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-              核對吻合度：100.0%
+            <h3 class="text-xs font-bold text-white">財務損益核對表</h3>
+            <span id="calib-match-rate" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              吻合度：100.0%
             </span>
           </div>
 
           <div class="overflow-x-auto text-xs">
-            <table class="w-full text-left">
+            <table class="w-full text-left font-mono">
               <thead>
-                <tr class="text-slate-400 border-b border-slate-700 text-[11px]">
-                  <th class="pb-2 font-semibold">會計科目</th>
-                  <th class="pb-2 text-right">模擬預估值</th>
-                  <th class="pb-2 text-right">官方真實報表</th>
-                  <th class="pb-2 text-right">差異值</th>
+                <tr class="text-slate-400 border-b border-slate-800 text-[11px] font-sans">
+                  <th class="pb-1">會計科目</th>
+                  <th class="pb-1 text-right">預估值</th>
+                  <th class="pb-1 text-right">官方基準</th>
+                  <th class="pb-1 text-right">差異</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800 font-medium">
+              <tbody class="divide-y divide-slate-800 text-[11px]">
                 <tr>
-                  <td class="py-1.5 text-slate-300 font-bold">銷貨收入總額 (Revenue)</td>
-                  <td class="py-1.5 text-right text-emerald-300 font-bold font-mono" id="audit-sim-rev">$3,026,999</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-rev">$3,026,999</td>
-                  <td class="py-1.5 text-right text-emerald-400 font-mono" id="audit-diff-rev">$0</td>
-                </tr>
-                <tr>
-                  <td class="py-1.5 text-slate-400 pl-2">銷貨成本總額 (COGS)</td>
-                  <td class="py-1.5 text-right text-rose-300 font-bold font-mono" id="audit-sim-cogs">-$2,031,336</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-cogs">-$2,031,336</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-cogs">$0</td>
-                </tr>
-                <tr class="bg-slate-950/50">
-                  <td class="py-1.5 text-white font-bold">營業毛利總額 (Gross Profit)</td>
-                  <td class="py-1.5 text-right text-emerald-400 font-black font-mono" id="audit-sim-gp">$995,663</td>
-                  <td class="py-1.5 text-right text-slate-200 font-mono" id="audit-real-gp">$995,663</td>
-                  <td class="py-1.5 text-right text-emerald-400 font-mono" id="audit-diff-gp">$0</td>
+                  <td class="py-1 text-slate-300 font-sans font-bold">銷貨收入 (Rev)</td>
+                  <td class="py-1 text-right text-emerald-300 font-bold" id="audit-sim-rev">$302.7 萬</td>
+                  <td class="py-1 text-right text-slate-300" id="audit-real-rev">$302.7 萬</td>
+                  <td class="py-1 text-right text-emerald-400" id="audit-diff-rev">$0</td>
                 </tr>
                 <tr>
-                  <td class="py-1.5 text-slate-400 pl-2">管理及人事費用 (G&A)</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-sim-ga">-$461,250</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-ga">-$461,250</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-ga">$0</td>
+                  <td class="py-1 text-slate-400 font-sans pl-2">銷貨成本 (COGS)</td>
+                  <td class="py-1 text-right text-rose-300 font-bold" id="audit-sim-cogs">-$203.1 萬</td>
+                  <td class="py-1 text-right text-slate-300" id="audit-real-cogs">-$203.1 萬</td>
+                  <td class="py-1 text-right text-slate-400" id="audit-diff-cogs">$0</td>
+                </tr>
+                <tr class="bg-slate-950/60 font-bold">
+                  <td class="py-1 text-white font-sans">營業毛利 (GP)</td>
+                  <td class="py-1 text-right text-emerald-400" id="audit-sim-gp">$99.6 萬</td>
+                  <td class="py-1 text-right text-slate-200" id="audit-real-gp">$99.6 萬</td>
+                  <td class="py-1 text-right text-emerald-400" id="audit-diff-gp">$0</td>
                 </tr>
                 <tr>
-                  <td class="py-1.5 text-slate-400 pl-2">行銷推廣與渠道 (M&S)</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-sim-ms">-$147,533</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-ms">-$147,533</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-ms">$0</td>
+                  <td class="py-1 text-slate-400 font-sans pl-2">營業費用 (Opex)</td>
+                  <td class="py-1 text-right text-slate-300" id="audit-sim-opex">-$78.9 萬</td>
+                  <td class="py-1 text-right text-slate-300" id="audit-real-opex">-$78.9 萬</td>
+                  <td class="py-1 text-right text-slate-400" id="audit-diff-opex">$0</td>
                 </tr>
-                <tr>
-                  <td class="py-1.5 text-slate-400 pl-2">研究發展費用 (R&D)</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-sim-rd">-$160,000</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-rd">-$160,000</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-rd">$0</td>
-                </tr>
-                <tr>
-                  <td class="py-1.5 text-slate-400 pl-2">預期信用減損/利益 (4%呆帳)</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-sim-credit">-$19,794</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-credit">-$19,794</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-credit">$0</td>
-                </tr>
-                <tr>
-                  <td class="py-1.5 text-slate-300 font-bold">營業費用合計 (Opex)</td>
-                  <td class="py-1.5 text-right text-rose-300 font-bold font-mono" id="audit-sim-opex">-$788,577</td>
-                  <td class="py-1.5 text-right text-slate-300 font-mono" id="audit-real-opex">-$788,577</td>
-                  <td class="py-1.5 text-right text-slate-400 font-mono" id="audit-diff-opex">$0</td>
-                </tr>
-                <tr class="bg-emerald-950/30 border-t-2 border-emerald-500/50">
-                  <td class="py-2 text-emerald-300 font-black">本期稅前/後淨利 (Net Profit)</td>
-                  <td class="py-2 text-right text-emerald-400 font-black text-sm font-mono" id="audit-sim-np">+$207,086</td>
-                  <td class="py-2 text-right text-slate-200 font-mono font-bold" id="audit-real-np">+$207,086</td>
-                  <td class="py-2 text-right text-emerald-400 font-mono font-bold" id="audit-diff-np">$0</td>
+                <tr class="bg-emerald-950/30 border-t-2 border-emerald-500/50 font-bold">
+                  <td class="py-1.5 text-emerald-300 font-sans">稅後淨利 (NP)</td>
+                  <td class="py-1.5 text-right text-emerald-400 text-xs" id="audit-sim-np">+$20.7 萬</td>
+                  <td class="py-1.5 text-right text-slate-200" id="audit-real-np">+$20.7 萬</td>
+                  <td class="py-1.5 text-right text-emerald-400" id="audit-diff-np">$0</td>
                 </tr>
               </tbody>
             </table>
@@ -647,227 +592,70 @@
         </div>
 
         <!-- TAB 2: Finished Goods Inventory Pool (15 Rows) -->
-        <div id="tab-content-inventory" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-          <div class="border-b border-slate-700/60 pb-2">
-            <h2 class="text-base font-bold text-white">官方標準製成品庫存數量與成本變動表 (15項)</h2>
-            <p class="text-[11px] text-slate-400">當期良品 90% 出貨，10% 留存結轉下期，加權平均成本全自動連貫</p>
+        <div id="tab-content-inventory" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+          <div class="border-b border-slate-700/60 pb-1.5">
+            <h3 class="text-xs font-bold text-white">製成品庫存滾動變動表 (15項)</h3>
           </div>
-
-          <div class="overflow-x-auto text-xs">
+          <div class="overflow-x-auto text-[11px] font-mono">
             <table class="w-full text-left">
               <thead>
-                <tr class="text-slate-400 border-b border-slate-700 text-[11px]">
-                  <th class="pb-1 font-semibold">項次</th>
-                  <th class="pb-1 font-semibold">製成品庫存與成本流向明細</th>
-                  <th class="pb-1 text-right">數量 (台)</th>
-                  <th class="pb-1 text-right">單位成本</th>
-                  <th class="pb-1 text-right">成本合計 (NTD)</th>
+                <tr class="text-slate-400 border-b border-slate-800 font-sans">
+                  <th class="pb-1">項次</th><th class="pb-1">項目</th><th class="pb-1 text-right">數量</th><th class="pb-1 text-right">單價</th><th class="pb-1 text-right">金額</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
-                <tr>
-                  <td class="py-1 text-slate-500">(1)</td>
-                  <td class="py-1 text-slate-300 font-sans">期初製成品庫存數量與成本</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r1-qty">35</td>
-                  <td class="py-1 text-right text-slate-400" id="inv-r2-cost">4,698</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r3-tot">164,434</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(2)</td>
-                  <td class="py-1 text-slate-300 font-sans">本期完工製成品入庫 (良品產量)</td>
-                  <td class="py-1 text-right text-emerald-300 font-bold" id="inv-r4-qty">369</td>
-                  <td class="py-1 text-right text-slate-400" id="inv-r5-cost">5,635</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r6-tot">2,077,870</td>
-                </tr>
-                <tr class="bg-slate-950/60">
-                  <td class="py-1 text-slate-500">(3)</td>
-                  <td class="py-1 text-white font-sans font-bold">本期可供銷售製成品合計 (加權平均成本)</td>
-                  <td class="py-1 text-right text-white font-bold" id="inv-r7-totqty">404</td>
-                  <td class="py-1 text-right text-amber-300 font-bold" id="inv-r7-cost">5,554</td>
-                  <td class="py-1 text-right text-white font-bold" id="inv-r7-tot">2,242,304</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(4)</td>
-                  <td class="py-1 text-slate-400 font-sans pl-2">本期完工製成品出貨 (90%)</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r8-qty">332</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(5)</td>
-                  <td class="py-1 text-slate-300 font-sans pl-2">本期可供銷售製成品出貨數量合計</td>
-                  <td class="py-1 text-right text-slate-200 font-bold" id="inv-r9-qty">367</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(6)</td>
-                  <td class="py-1 text-blue-400 font-sans pl-4">新興市場實際銷售數量與成本</td>
-                  <td class="py-1 text-right text-blue-300" id="inv-r10-qty">220</td>
-                  <td class="py-1 text-right text-slate-400" id="inv-r10-cost">5,554</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r10-cogs">1,221,880</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(7)</td>
-                  <td class="py-1 text-purple-400 font-sans pl-4">成熟市場實際銷售數量與成本</td>
-                  <td class="py-1 text-right text-purple-300" id="inv-r11-qty">146</td>
-                  <td class="py-1 text-right text-slate-400" id="inv-r11-cost">5,554</td>
-                  <td class="py-1 text-right text-slate-300" id="inv-r11-cogs">809,456</td>
-                </tr>
-                <tr class="bg-rose-950/20 font-bold">
-                  <td class="py-1 text-slate-500">-</td>
-                  <td class="py-1 text-rose-300 font-sans">本期銷貨成本合計 (COGS = 366台 * $5,554)</td>
-                  <td class="py-1 text-right text-rose-300" id="inv-cogs-qty">366</td>
-                  <td class="py-1 text-right text-rose-300" id="inv-cogs-cost">5,554</td>
-                  <td class="py-1 text-right text-rose-400" id="inv-cogs-tot">2,031,336</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-500">(8)</td>
-                  <td class="py-1 text-slate-400 font-sans pl-2">本期完工留存次期出貨數量 (10%)</td>
-                  <td class="py-1 text-right font-mono text-amber-300" id="inv-r12-qty">37</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                </tr>
-                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40">
-                  <td class="py-1 text-slate-500">(9)</td>
-                  <td class="py-1 text-indigo-300 font-sans">期末製成品庫存數量與成本 (結轉次期)</td>
-                  <td class="py-1 text-right text-indigo-200" id="inv-r13-qty">38</td>
-                  <td class="py-1 text-right text-amber-300" id="inv-r14-cost">5,554</td>
-                  <td class="py-1 text-right text-indigo-300" id="inv-r15-tot">210,968</td>
-                </tr>
+              <tbody class="divide-y divide-slate-850">
+                <tr><td>(1)</td><td class="font-sans">期初庫存</td><td class="text-right" id="inv-r1-qty">35</td><td class="text-right" id="inv-r2-cost">4,698</td><td class="text-right" id="inv-r3-tot">$16.4 萬</td></tr>
+                <tr><td>(2)</td><td class="font-sans text-emerald-300">完工入庫</td><td class="text-right text-emerald-300" id="inv-r4-qty">369</td><td class="text-right" id="inv-r5-cost">5,635</td><td class="text-right" id="inv-r6-tot">$207.8 萬</td></tr>
+                <tr class="bg-slate-950 font-bold"><td>(3)</td><td class="font-sans text-white">可供銷售合計</td><td class="text-right text-white" id="inv-r7-totqty">404</td><td class="text-right text-amber-300" id="inv-r7-cost">5,554</td><td class="text-right text-white" id="inv-r7-tot">$224.2 萬</td></tr>
+                <tr><td>(4)</td><td class="font-sans text-slate-400">當期出貨(90%)</td><td class="text-right" id="inv-r8-qty">332</td><td class="text-right">-</td><td class="text-right">-</td></tr>
+                <tr class="bg-rose-950/20 font-bold"><td>-</td><td class="font-sans text-rose-300">銷貨成本總計</td><td class="text-right text-rose-300" id="inv-cogs-qty">366</td><td class="text-right text-rose-300" id="inv-cogs-cost">5,554</td><td class="text-right text-rose-400" id="inv-cogs-tot">$203.1 萬</td></tr>
+                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40"><td>(9)</td><td class="font-sans text-indigo-300">期末庫存結轉下期</td><td class="text-right text-indigo-200" id="inv-r13-qty">38</td><td class="text-right text-amber-300" id="inv-r14-cost">5,554</td><td class="text-right text-indigo-300" id="inv-r15-tot">$21.1 萬</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <!-- TAB 3: Raw Materials Inventory Pool (18 Rows) -->
-        <div id="tab-content-rawmat" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-          <div class="border-b border-slate-700/60 pb-2 flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-white">官方標準原料庫存數量與成本變動表 (18項)</h2>
-              <p class="text-[11px] text-slate-400">提前1月預購、下月入庫、實耗扣抵與超量回庫完全勾稽</p>
-            </div>
-            <span class="text-xs text-indigo-400 font-mono">1套 = 1個A01 + 1個A02</span>
+        <div id="tab-content-rawmat" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+          <div class="border-b border-slate-700/60 pb-1.5 flex justify-between items-center">
+            <h3 class="text-xs font-bold text-white">原料庫存與預購變動表 (18項)</h3>
+            <span class="text-[10px] text-slate-400">1套 = A01 + A02</span>
           </div>
-
-          <div class="overflow-x-auto text-xs">
-            <table class="w-full text-left font-mono text-[11px]">
+          <div class="overflow-x-auto text-[11px] font-mono">
+            <table class="w-full text-left">
               <thead>
-                <tr class="text-slate-400 border-b border-slate-700">
-                  <th class="pb-1 font-semibold font-sans">庫存與成本項次</th>
-                  <th class="pb-1 text-right font-sans">A01 (低品質)</th>
-                  <th class="pb-1 text-right font-sans">A02 (高品質)</th>
-                  <th class="pb-1 text-right font-sans">合計 (NTD)</th>
+                <tr class="text-slate-400 border-b border-slate-800 font-sans">
+                  <th class="pb-1">項目</th><th class="pb-1 text-right">A01 (低)</th><th class="pb-1 text-right">A02 (高)</th><th class="pb-1 text-right">成本合計</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800">
-                <tr>
-                  <td class="py-1 text-slate-300 font-sans">(1) 期初原料庫存數量</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r1-a01">0</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r1-a02">0</td>
-                  <td class="py-1 text-right text-slate-400" id="rm-r1-tot">0</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-400 font-sans">(2) 期初原料單位成本</td>
-                  <td class="py-1 text-right text-slate-400" id="rm-r2-a01">1,002</td>
-                  <td class="py-1 text-right text-slate-400" id="rm-r2-a02">1,203</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-300 font-sans">(3) 期初原料成本合計</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r3-a01">$0</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r3-a02">$0</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r3-tot">$0</td>
-                </tr>
-                <tr class="bg-indigo-950/30">
-                  <td class="py-1 text-indigo-300 font-sans font-bold">(4) 前期預購原料入庫數量 (本月到貨)</td>
-                  <td class="py-1 text-right text-indigo-300 font-bold" id="rm-r4-a01">250</td>
-                  <td class="py-1 text-right text-indigo-300 font-bold" id="rm-r4-a02">250</td>
-                  <td class="py-1 text-right text-indigo-300 font-bold" id="rm-r4-tot">500</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-400 font-sans">(5) 前期預購原料單位成本</td>
-                  <td class="py-1 text-right text-slate-400" id="rm-r5-a01">1,002</td>
-                  <td class="py-1 text-right text-slate-400" id="rm-r5-a02">1,203</td>
-                  <td class="py-1 text-right text-slate-500">-</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-300 font-sans">(6) 前期預購原料成本合計</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r6-a01">$250,500</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r6-a02">$300,750</td>
-                  <td class="py-1 text-right text-slate-200 font-bold" id="rm-r6-tot">$551,250</td>
-                </tr>
-                <tr class="bg-slate-950/60 font-bold">
-                  <td class="py-1 text-white font-sans">(7) 本期可供投產數量合計</td>
-                  <td class="py-1 text-right text-white" id="rm-r7-a01">250</td>
-                  <td class="py-1 text-right text-white" id="rm-r7-a02">250</td>
-                  <td class="py-1 text-right text-white" id="rm-r7-tot">500</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-emerald-400 font-sans font-bold">(9) 本期實際投產數量</td>
-                  <td class="py-1 text-right text-emerald-300 font-bold" id="rm-r9-a01">250</td>
-                  <td class="py-1 text-right text-emerald-300 font-bold" id="rm-r9-a02">250</td>
-                  <td class="py-1 text-right text-emerald-300 font-bold" id="rm-r9-tot">500</td>
-                </tr>
-                <tr>
-                  <td class="py-1 text-slate-300 font-sans">(11) 本期實際投產成本合計</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r11-a01">$250,500</td>
-                  <td class="py-1 text-right text-slate-300" id="rm-r11-a02">$300,750</td>
-                  <td class="py-1 text-right text-slate-200 font-bold" id="rm-r11-tot">$551,250</td>
-                </tr>
-                <tr class="bg-amber-950/20">
-                  <td class="py-1 text-amber-300 font-sans">(13) 本期預購原料數量 (下月到貨)</td>
-                  <td class="py-1 text-right text-amber-300 font-bold" id="rm-r13-a01">300</td>
-                  <td class="py-1 text-right text-amber-300 font-bold" id="rm-r13-a02">300</td>
-                  <td class="py-1 text-right text-amber-300 font-bold" id="rm-r13-tot">600</td>
-                </tr>
-                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40">
-                  <td class="py-1 text-indigo-300 font-sans">(16) 期末原料庫存數量 (結轉下期)</td>
-                  <td class="py-1 text-right text-indigo-200" id="rm-r16-a01">0</td>
-                  <td class="py-1 text-right text-indigo-200" id="rm-r16-a02">0</td>
-                  <td class="py-1 text-right text-indigo-200" id="rm-r16-tot">0</td>
-                </tr>
-                <tr class="bg-indigo-950/40 font-bold">
-                  <td class="py-1 text-indigo-300 font-sans">(18) 期末原料成本合計</td>
-                  <td class="py-1 text-right text-indigo-300" id="rm-r18-a01">$0</td>
-                  <td class="py-1 text-right text-indigo-300" id="rm-r18-a02">$0</td>
-                  <td class="py-1 text-right text-emerald-400" id="rm-r18-tot">$0</td>
-                </tr>
+              <tbody class="divide-y divide-slate-850">
+                <tr><td class="font-sans">(1) 期初原料</td><td class="text-right" id="rm-r1-a01">0</td><td class="text-right" id="rm-r1-a02">0</td><td class="text-right" id="rm-r3-tot">$0</td></tr>
+                <tr class="bg-indigo-950/30 font-bold"><td class="font-sans text-indigo-300">(4) 上月預購本月到貨</td><td class="text-right text-indigo-300" id="rm-r4-a01">250</td><td class="text-right text-indigo-300" id="rm-r4-a02">250</td><td class="text-right text-indigo-300" id="rm-r6-tot">$55.1 萬</td></tr>
+                <tr class="font-bold"><td class="font-sans text-emerald-400">(9) 本月實際投產耗用</td><td class="text-right text-emerald-300" id="rm-r9-a01">250</td><td class="text-right text-emerald-300" id="rm-r9-a02">250</td><td class="text-right text-emerald-300" id="rm-r11-tot">$55.1 萬</td></tr>
+                <tr class="bg-amber-950/20"><td class="font-sans text-amber-300">(13) 本月預購 (下月入庫)</td><td class="text-right text-amber-300" id="rm-r13-a01">500</td><td class="text-right text-amber-300" id="rm-r13-a02">500</td><td class="text-right text-amber-300 font-bold" id="rm-r13-tot">1,000 個</td></tr>
+                <tr class="bg-indigo-950/40 font-bold border-t border-indigo-500/40"><td class="font-sans text-indigo-300">(16) 期末結存原料</td><td class="text-right text-indigo-200" id="rm-r16-a01">0</td><td class="text-right text-indigo-200" id="rm-r16-a02">0</td><td class="text-right text-emerald-400" id="rm-r18-tot">$0</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <!-- TAB 4: Balance Sheet & Cash Flow -->
-        <div id="tab-content-bs" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-          <div class="border-b border-slate-700/60 pb-2">
-            <h2 class="text-base font-bold text-white">資產負債與期末現金結構 (BS/CF)</h2>
-            <p class="text-[11px] text-slate-400">真實核對存量資產、流動性防護與累積權益淨值</p>
+        <div id="tab-content-bs" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+          <div class="border-b border-slate-700/60 pb-1.5">
+            <h3 class="text-xs font-bold text-white">資產負債與期末現金結構 (BS)</h3>
           </div>
-
-          <div class="grid grid-cols-2 gap-4 text-xs">
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
-              <span class="font-bold text-blue-400 border-b border-slate-800 pb-1 block">資產項目 (Assets)</span>
-              <div class="space-y-1 font-medium">
-                <div class="flex justify-between"><span class="text-slate-400">現金及約當現金:</span><strong id="bs-cash" class="text-emerald-300 font-mono">$5,626.8 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">應收帳款淨額:</span><strong id="bs-ar" class="text-slate-200 font-mono">$1,453.0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">製成品存貨:</span><strong id="bs-inv-fg" class="text-slate-200 font-mono">$211.0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">原料存貨:</span><strong id="bs-inv-mat" class="text-slate-200 font-mono">$441.0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">固定資產淨額:</span><strong id="bs-fixed" class="text-slate-200 font-mono">$2,552.0 K</strong></div>
-                <div class="border-t border-slate-800 pt-1 flex justify-between font-bold text-white"><span>資產總計:</span><strong id="bs-total-assets" class="text-emerald-400 font-mono">$10,283.8 K</strong></div>
-              </div>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1">
+              <span class="font-bold text-blue-400 block border-b border-slate-850 pb-0.5">資產</span>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">現金及約當:</span><strong id="bs-cash" class="text-emerald-300 font-mono">$562.7 萬</strong></div>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">應收帳款淨額:</span><strong id="bs-ar" class="text-slate-200 font-mono">$145.3 萬</strong></div>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">固定資產淨額:</span><strong id="bs-fixed" class="text-slate-200 font-mono">$255.2 萬</strong></div>
             </div>
-
-            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
-              <span class="font-bold text-purple-400 border-b border-slate-800 pb-1 block">負債與權益 (Liab & Equity)</span>
-              <div class="space-y-1 font-medium">
-                <div class="flex justify-between"><span class="text-slate-400">應付帳款 (原料貨款):</span><strong id="bs-ap" class="text-slate-200 font-mono">$2,666.0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">應付薪資與費用:</span><strong id="bs-sal" class="text-slate-200 font-mono">$788.6 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">短期臨時借款:</span><strong id="bs-short-loan" class="text-slate-400 font-mono">$0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">長期借款:</span><strong id="bs-long-loan" class="text-slate-400 font-mono">$0 K</strong></div>
-                <div class="flex justify-between"><span class="text-slate-400">業主權益總額:</span><strong id="bs-equity" class="text-emerald-300 font-mono">$6,200.7 K</strong></div>
-                <div class="border-t border-slate-800 pt-1 flex justify-between font-bold text-white"><span>每股淨值 (NAV):</span><strong id="bs-nav" class="text-amber-300 font-mono">6.20 元</strong></div>
-              </div>
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1">
+              <span class="font-bold text-purple-400 block border-b border-slate-850 pb-0.5">負債與權益</span>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">應付帳款(原料):</span><strong id="bs-ap" class="text-slate-200 font-mono">$266.6 萬</strong></div>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">業主權益總額:</span><strong id="bs-equity" class="text-emerald-300 font-mono">$620.1 萬</strong></div>
+              <div class="flex justify-between text-[11px]"><span class="text-slate-400">每股淨值 (NAV):</span><strong id="bs-nav" class="text-amber-300 font-mono">6.20 元</strong></div>
             </div>
           </div>
         </div>
@@ -879,112 +667,73 @@
 
   <!-- ==================== REALISTIC MONTH SETTLEMENT MODAL ==================== -->
   <div id="modal-settlement" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 modal-backdrop hidden">
-    <div class="bg-slate-900 border-2 border-emerald-500/60 rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-200">
+    <div class="bg-slate-900 border-2 border-emerald-500/60 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
 
       <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-2xl">
-            🏆
-          </div>
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-xl">🏆</div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-xl sm:text-2xl font-black text-white" id="modal-title">第 6 月度競賽營運結算戰報</h2>
-              <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">結算成功</span>
+              <h2 class="text-lg sm:text-xl font-black text-white" id="modal-title">第 6 月營運結算戰報</h2>
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">結算成功</span>
             </div>
-            <p class="text-xs text-slate-400 mt-0.5">存量項目已全數結轉至下月，當期單月培訓與流量支出已結清。</p>
+            <p class="text-[11px] text-slate-400">存量已結轉至下月，單期培訓與流量支出已結清。</p>
           </div>
         </div>
-        <button onclick="closeSettlementModal()" class="text-slate-400 hover:text-white text-xl p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
+        <button onclick="closeSettlementModal()" class="text-slate-400 hover:text-white text-lg p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
       </div>
 
-      <!-- Part 1: Financial Performance Grid -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          一、 本期損益經營戰果 (P&L Performance)
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-medium">
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-400 block text-[11px]">銷貨營收總額</span>
-            <strong class="text-sm font-bold text-white font-mono" id="m-stat-rev">$3,026,999</strong>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-400 block text-[11px]">營業毛利 (毛利率)</span>
-            <strong class="text-sm font-bold text-emerald-400 font-mono" id="m-stat-gp">$995,663 (32.9%)</strong>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-400 block text-[11px]">營業費用總計</span>
-            <strong class="text-sm font-bold text-rose-300 font-mono" id="m-stat-opex">-$788,577</strong>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20">
-            <span class="text-emerald-400 block text-[11px] font-bold">本期稅後淨利</span>
-            <strong class="text-base font-black text-emerald-300 font-mono" id="m-stat-np">+$207,086</strong>
-          </div>
+      <!-- Part 1: Financial Performance Grid (Clean 4 Cards) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-medium">
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+          <span class="text-slate-400 block text-[10px]">銷貨營收</span>
+          <strong class="text-sm font-bold text-white font-mono" id="m-stat-rev">$302.7 萬</strong>
+        </div>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+          <span class="text-slate-400 block text-[10px]">營業毛利</span>
+          <strong class="text-sm font-bold text-emerald-400 font-mono" id="m-stat-gp">$99.6 萬</strong>
+        </div>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+          <span class="text-slate-400 block text-[10px]">營業費用</span>
+          <strong class="text-sm font-bold text-rose-300 font-mono" id="m-stat-opex">-$78.9 萬</strong>
+        </div>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-center">
+          <span class="text-emerald-400 block text-[10px] font-bold">稅後淨利</span>
+          <strong class="text-base font-black text-emerald-300 font-mono" id="m-stat-np">+$20.7 萬</strong>
         </div>
       </div>
 
-      <!-- Part 2: Balance Sheet & Physical Resource Carryover (該累積的累積) -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-          二、 資源存量結轉清單（自動累積至下期）
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <!-- Cash Roll -->
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-emerald-400 flex items-center gap-1">💰 期末現金結存 (滾入下月期初)</span>
-              <strong class="text-emerald-300 font-mono font-bold" id="m-carry-cash">$5,626.8 K</strong>
-            </div>
-            <p class="text-[11px] text-slate-400" id="m-carry-cash-desc">由本期營收現金收現、上期應收款變現，扣抵薪資與費用後之結餘現金。</p>
+      <!-- Part 2: Carryover Resource Summary -->
+      <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2 text-xs">
+        <span class="font-bold text-indigo-300 block text-xs">📦 存量結轉清單（自動帶入下期）：</span>
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+          <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
+            <span class="text-slate-400">💰 期末結算現金:</span>
+            <strong class="text-emerald-300 font-mono" id="m-carry-cash">$562.7 萬</strong>
           </div>
-
-          <!-- Raw Materials Inbound & Remaining -->
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-indigo-300 flex items-center gap-1">📦 下期可用原料總額</span>
-              <strong class="text-indigo-200 font-mono font-bold" id="m-carry-mat">500 套可用</strong>
-            </div>
-            <p class="text-[11px] text-slate-400" id="m-carry-mat-desc">包含上月預購於本月初入庫 500 套，以及本月未投完之庫存原料。</p>
+          <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
+            <span class="text-slate-400">📦 下期可用原料:</span>
+            <strong class="text-indigo-200 font-mono" id="m-carry-mat">500 套</strong>
           </div>
-
-          <!-- Finished Goods Rolling Stock -->
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-blue-400 flex items-center gap-1">🏭 製成品留存次期出貨</span>
-              <strong class="text-blue-200 font-mono font-bold" id="m-carry-fg">38 台 ($211.0 K)</strong>
-            </div>
-            <p class="text-[11px] text-slate-400">完工良品 90% 出貨，10% 依加權平均單價結轉至下期優先銷售。</p>
+          <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
+            <span class="text-slate-400">🏭 製成品留存出貨:</span>
+            <strong class="text-blue-200 font-mono" id="m-carry-fg">38 台 ($21.1 萬)</strong>
           </div>
-
-          <!-- Abilities Permanent Growth -->
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-purple-400 flex items-center gap-1">👥 團隊能力升級經驗</span>
-              <strong class="text-purple-200 font-mono font-bold" id="m-carry-ab">1類 0.54 / 2類 0.70</strong>
-            </div>
-            <p class="text-[11px] text-slate-400" id="m-carry-ab-desc">實測培訓加成永久保留，下期員工加工能力直接繼承提升後成果。</p>
+          <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex justify-between">
+            <span class="text-slate-400">👥 團隊能力升級:</span>
+            <strong class="text-purple-200 font-mono" id="m-carry-ab">1類 0.54 / 2類 0.70</strong>
           </div>
         </div>
-      </div>
-
-      <!-- Part 3: Ephemeral Items Cleared (不該累積的不要累積) -->
-      <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
-        <span class="font-bold text-amber-300 block">🧹 流量項目結清說明（避免重複花費）：</span>
-        <ul class="list-disc list-inside space-y-0.5 text-slate-400">
-          <li>各部門單月教育訓練決策已結清，第 <span class="font-mono text-white" id="m-next-month-num">7</span> 個月培訓等級重設為 0（不重複扣款，能力經驗已永久保留）。</li>
-          <li>當期廣告費用、市場研究報告與單月研發投入已於本期扣除，下期可重新自由配置。</li>
-        </ul>
       </div>
 
       <!-- Modal Actions -->
-      <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-800">
-        <button onclick="closeSettlementModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
-          留在本月複盤微調
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+        <button onclick="closeSettlementModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          留在本月複盤
         </button>
-        <button onclick="confirmAndScrollToNextMonth()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm transition shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
-          <span>🌟</span> 前往第 <span id="m-next-btn-lbl" class="font-mono underline">7</span> 個月決策空間（平滑滾動）
+        <button onclick="confirmAndScrollToNextMonth()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm transition shadow-lg flex items-center gap-1.5">
+          <span>🌟</span> 前往第 <span id="m-next-btn-lbl" class="font-mono underline">7</span> 個月（平滑滾動）
         </button>
       </div>
 
@@ -993,52 +742,110 @@
 
   <!-- ==================== NEW PROFILE CREATION MODAL ==================== -->
   <div id="modal-new-profile" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="border-b border-slate-800 pb-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3.5">
+      <div class="border-b border-slate-800 pb-2.5">
         <h3 class="text-base font-bold text-white">建立新決策規劃方案</h3>
         <p class="text-xs text-slate-400">可選擇從第 1 個月起跑模擬全賽程，或以目前方案為基礎進行複製。</p>
       </div>
-      <div class="space-y-3 text-xs">
+      <div class="space-y-2.5 text-xs">
         <div>
           <label class="text-slate-300 font-bold block mb-1">方案名稱：</label>
-          <input type="text" id="inp-new-profile-name" placeholder="例如：極限獲利流 (從第1月)"
-            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white font-bold focus:ring-2 focus:ring-blue-500 text-sm">
+          <input type="text" id="inp-new-profile-name" placeholder="例如：穩健奪冠方案 (從第1月)"
+            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-white font-bold focus:ring-2 focus:ring-blue-500 text-xs">
         </div>
         <div>
           <label class="text-slate-300 font-bold block mb-1">起跑模式：</label>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-700 bg-slate-950/60 cursor-pointer hover:border-emerald-500/50">
+          <div class="space-y-1.5">
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-700 bg-slate-950/60 cursor-pointer hover:border-emerald-500/50">
               <input type="radio" name="profile-mode" value="m1_fresh" checked class="text-emerald-500">
               <div>
                 <span class="font-bold text-white block">從第 1 個月全新起跑（推薦★）</span>
-                <span class="text-[11px] text-slate-400">初始資本 650 萬、原料0、從M1逐月推進模擬完整賽程。</span>
+                <span class="text-[10px] text-slate-400">初始資本 650 萬、原料0、從M1逐月推進模擬完整賽程。</span>
               </div>
             </label>
-            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-700 bg-slate-950/60 cursor-pointer hover:border-blue-500/50">
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-700 bg-slate-950/60 cursor-pointer hover:border-blue-500/50">
               <input type="radio" name="profile-mode" value="clone_current" class="text-blue-500">
               <div>
                 <span class="font-bold text-white block">複製當前方案決策數據</span>
-                <span class="text-[11px] text-slate-400">完整保留目前設定檔之各月決策，適合進行 A/B 策略對照。</span>
+                <span class="text-[10px] text-slate-400">保留目前設定檔之各月決策，適合進行 A/B 策略對照。</span>
               </div>
             </label>
           </div>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button onclick="closeNewProfileModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">取消</button>
-        <button onclick="submitCreateNewProfile()" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow">確認建立</button>
+        <button onclick="closeNewProfileModal()" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">取消</button>
+        <button onclick="submitCreateNewProfile()" class="px-3.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow">確認建立</button>
       </div>
     </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/60 text-emerald-300 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-2">
-    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/60 text-emerald-300 px-3.5 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-2">
+    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
     <span id="toast-msg">通知內容</span>
   </div>
 
   <!-- ==================== JAVASCRIPT SIMULATION ENGINE ==================== -->
   <script>
+    // VIEW MODE CONTROLLER (SIMPLE vs EXPERT)
+    let viewMode = 'simple'; // 'simple' or 'expert'
+    let deptExpanded = false;
+
+    function switchViewMode(mode) {
+      viewMode = mode;
+      const btnSimple = document.getElementById('btn-mode-simple');
+      const btnExpert = document.getElementById('btn-mode-expert');
+
+      if (mode === 'simple') {
+        btnSimple.className = 'px-3 py-1 rounded-lg font-bold transition bg-emerald-600 text-white shadow';
+        btnExpert.className = 'px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white';
+        // Hide details by default
+        deptExpanded = false;
+        document.getElementById('dept-summary-row').classList.remove('hidden');
+        document.getElementById('dept-details-grid').classList.add('hidden');
+        document.getElementById('btn-toggle-depts').innerText = '展開細項 ▼';
+      } else {
+        btnExpert.className = 'px-3 py-1 rounded-lg font-bold transition bg-blue-600 text-white shadow';
+        btnSimple.className = 'px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white';
+        // Show details in expert mode
+        deptExpanded = true;
+        document.getElementById('dept-summary-row').classList.add('hidden');
+        document.getElementById('dept-details-grid').classList.remove('hidden');
+        document.getElementById('btn-toggle-depts').innerText = '收合細項 ▲';
+      }
+      calculateAll();
+      showToast(`已切換為：${mode === 'simple' ? '⚡ 簡約作戰模式 (金額萬元化)' : '📊 專家詳細對帳模式 (全額展示)'}`);
+    }
+
+    function toggleDeptDetails() {
+      deptExpanded = !deptExpanded;
+      const sumRow = document.getElementById('dept-summary-row');
+      const detGrid = document.getElementById('dept-details-grid');
+      const btn = document.getElementById('btn-toggle-depts');
+
+      if (deptExpanded) {
+        sumRow.classList.add('hidden');
+        detGrid.classList.remove('hidden');
+        btn.innerText = '收合細項 ▲';
+      } else {
+        sumRow.classList.remove('hidden');
+        detGrid.classList.add('hidden');
+        btn.innerText = '展開細項 ▼';
+      }
+    }
+
+    // Money Formatting: In simple mode converts to 萬 (Ten Thousands), in expert mode shows exact
+    function fmtMoney(num) {
+      if (viewMode === 'simple') {
+        if (Math.abs(num) >= 10000) {
+          return `${(num / 10000).toFixed(1)} 萬`;
+        }
+        return `${formatNumber(num)} 元`;
+      }
+      return `${formatNumber(num)} 元`;
+    }
+
     // 1. OFFICIAL HISTORICAL FINANCIAL DATA BENCHMARKS (M1 ~ M11)
     const C01_HISTORY = {
       1: { name: "M1", rev: 0, cogs: 0, gp: 0, ga: 250000, ms: 0, rd: 1500000, credit: 0, opex: 1750000, np: -1750000, cash: 6500000, ar: 0, ap: 0, inv_fg: 0, inv_mat: 0, ppe: 2000000, equity: 8250000 },
@@ -1145,8 +952,8 @@
       try {
         localStorage.setItem('8cross_multi_profiles_v4', JSON.stringify(appProfiles));
         const badge = document.getElementById('save-status-text');
-        badge.innerText = '已自動儲存';
-        setTimeout(() => { badge.innerText = '設定檔已就緒'; }, 1500);
+        badge.innerText = '已存檔';
+        setTimeout(() => { badge.innerText = '已自動存檔'; }, 1500);
       } catch (e) {
         console.error(e);
       }
@@ -1169,10 +976,9 @@
       currentProfile = document.getElementById('sel-profile').value;
       loadMonthData(currentMonth);
       renderTimelineStepper();
-      showToast(`已切換至規劃方案：${currentProfile}`);
+      showToast(`已切換方案：${currentProfile}`);
     }
 
-    // Modal Profile Creator
     function openNewProfileModal() {
       document.getElementById('inp-new-profile-name').value = '';
       document.getElementById('modal-new-profile').classList.remove('hidden');
@@ -1195,9 +1001,7 @@
       const mode = document.querySelector('input[name="profile-mode"]:checked').value;
       if (mode === 'm1_fresh') {
         appProfiles[name] = {
-          months: {
-            1: getDefaultMonthDecision(1)
-          },
+          months: { 1: getDefaultMonthDecision(1) },
           accumTrainProd: 0, accumTrainMkt: 0, accumTrainMgmt: 0, accumTrainFin: 0, accumTrainTech: 0,
           settledThrough: 1
         };
@@ -1275,7 +1079,7 @@
           colorClasses = 'bg-slate-850 border-emerald-500/40 text-emerald-300 hover:bg-slate-800';
         }
 
-        btn.className = `px-2.5 py-1 rounded-xl text-xs font-bold border transition flex flex-col items-center shrink-0 ${colorClasses}`;
+        btn.className = `px-2 py-0.5 rounded-xl text-xs font-bold border transition flex flex-col items-center shrink-0 ${colorClasses}`;
         btn.innerHTML = `<span>M${m}</span><span class="text-[9px] font-mono opacity-80">${npLabel || '未決'}</span>`;
         btn.onclick = () => {
           saveCurrentMonthInput();
@@ -1290,7 +1094,7 @@
     function loadMonthData(m) {
       currentMonth = m;
       document.getElementById('next-month-lbl').innerText = Math.min(48, m + 1);
-      document.getElementById('txt-preorder-arrival-info').innerText = `將於第 ${m + 1} 月到貨`;
+      document.getElementById('txt-preorder-arrival-info').innerText = `第 ${m + 1} 月到貨`;
 
       const p = appProfiles[currentProfile];
       if (!p.months) p.months = {};
@@ -1306,14 +1110,11 @@
       document.getElementById('inp-lines-b').value = data.linesB ?? 0;
       document.getElementById('inp-pairs-a').value = data.pairsA ?? 500;
       document.getElementById('inp-yield-custom').value = data.yieldA ?? 73.8;
-      document.getElementById('inp-ratio-a').value = data.ratioA ?? "0.5";
       document.getElementById('inp-preorder-a01').value = data.preorderA01 ?? 500;
       document.getElementById('inp-preorder-a02').value = data.preorderA02 ?? 500;
 
       document.getElementById('inp-price-em').value = data.priceEm ?? 275;
       document.getElementById('inp-price-dev').value = data.priceDev ?? 300;
-      document.getElementById('inp-alloc-em').value = data.allocEm ?? 60;
-      document.getElementById('inp-alloc-dev').value = data.allocDev ?? 40;
 
       document.getElementById('staff-prod-a1').value = data.staffA1 ?? 1;
       document.getElementById('staff-prod-a2').value = data.staffA2 ?? 7;
@@ -1355,13 +1156,10 @@
         linesB: getVal('inp-lines-b'),
         pairsA: getVal('inp-pairs-a'),
         yieldA: parseFloat(document.getElementById('inp-yield-custom').value) || 73.8,
-        ratioA: document.getElementById('inp-ratio-a').value,
         preorderA01: getVal('inp-preorder-a01'),
         preorderA02: getVal('inp-preorder-a02'),
         priceEm: getVal('inp-price-em'),
         priceDev: getVal('inp-price-dev'),
-        allocEm: getVal('inp-alloc-em'),
-        allocDev: getVal('inp-alloc-dev'),
         staffA1: getVal('staff-prod-a1'), staffA2: getVal('staff-prod-a2'), staffA3: getVal('staff-prod-a3'),
         staffMkt1: getVal('staff-mkt-1'), staffMkt2: getVal('staff-mkt-2'), staffMkt3: getVal('staff-mkt-3'),
         staffMgmt1: getVal('staff-mgmt-1'), staffMgmt2: getVal('staff-mgmt-2'), staffMgmt3: getVal('staff-mgmt-3'),
@@ -1394,11 +1192,10 @@
       const humanCap = window.currentHumanCap || 369;
       const reqPairs = Math.ceil(humanCap / Math.max(0.01, yieldRate));
       document.getElementById('inp-pairs-a').value = reqPairs;
-      // Also sync preorder for next month
       document.getElementById('inp-preorder-a01').value = reqPairs;
       document.getElementById('inp-preorder-a02').value = reqPairs;
       onInputDataChange();
-      showToast(`已自動平衡投產原料為 ${reqPairs} 套，並同步設定下月預購！`);
+      showToast(`已自動平衡投料為 ${reqPairs} 套，並同步設定下月預購！`);
     }
 
     // 5. SETTLEMENT MODAL & REALISTIC CARRYOVER ADVANCE
@@ -1415,29 +1212,23 @@
         return;
       }
 
-      // Populate Modal Content
-      document.getElementById('modal-title').innerText = `第 ${m} 月度競賽營運結算戰報`;
-      document.getElementById('m-next-month-num').innerText = nextM;
+      document.getElementById('modal-title').innerText = `第 ${m} 月營運結算戰報`;
       document.getElementById('m-next-btn-lbl').innerText = nextM;
 
       const rep = currentSettlementReport || {};
-      document.getElementById('m-stat-rev').innerText = `$${formatNumber(rep.rev || 0)}`;
-      document.getElementById('m-stat-gp').innerText = `$${formatNumber(rep.gp || 0)} (${(rep.gpMargin || 0).toFixed(1)}%)`;
-      document.getElementById('m-stat-opex').innerText = `-$${formatNumber(rep.opex || 0)}`;
+      document.getElementById('m-stat-rev').innerText = `$${fmtMoney(rep.rev || 0)}`;
+      document.getElementById('m-stat-gp').innerText = `$${fmtMoney(rep.gp || 0)}`;
+      document.getElementById('m-stat-opex').innerText = `-$${fmtMoney(rep.opex || 0)}`;
 
       const npEl = document.getElementById('m-stat-np');
-      npEl.innerText = `${(rep.np || 0) >= 0 ? '+' : ''}$${formatNumber(rep.np || 0)}`;
+      npEl.innerText = `${(rep.np || 0) >= 0 ? '+' : ''}$${fmtMoney(rep.np || 0)}`;
       npEl.className = (rep.np || 0) >= 0 ? 'text-base font-black text-emerald-300 font-mono' : 'text-base font-black text-rose-400 font-mono';
 
-      document.getElementById('m-carry-cash').innerText = `$${((rep.endCash || 5626834)/1000).toFixed(1)} K`;
-      document.getElementById('m-carry-mat').innerText = `${formatNumber(rep.nextAvailMat || 500)} 套可用`;
-      document.getElementById('m-carry-mat-desc').innerText = `包含本月預購的 ${formatNumber(rep.preorderPairs || 500)} 套於第 ${nextM} 月初入庫，及結存 ${formatNumber(rep.endMatPairs || 0)} 套。`;
-
-      document.getElementById('m-carry-fg').innerText = `${formatNumber(rep.endFgQty || 38)} 台 ($${formatNumber(rep.endFgCost || 210968)})`;
+      document.getElementById('m-carry-cash').innerText = `$${fmtMoney(rep.endCash || 5626834)}`;
+      document.getElementById('m-carry-mat').innerText = `${formatNumber(rep.nextAvailMat || 500)} 套`;
+      document.getElementById('m-carry-fg').innerText = `${formatNumber(rep.endFgQty || 38)} 台 ($${fmtMoney(rep.endFgCost || 210968)})`;
       document.getElementById('m-carry-ab').innerText = `1類 ${rep.ab1 || '0.54'} / 2類 ${rep.ab2 || '0.70'}`;
-      document.getElementById('m-carry-ab-desc').innerText = `生產累積培訓 ${rep.accumProdCount || 1} 次，能力永久保留並帶入第 ${nextM} 月。`;
 
-      // Show Modal
       document.getElementById('modal-settlement').classList.remove('hidden');
     }
 
@@ -1451,55 +1242,47 @@
       const curM = currentMonth;
       const nextM = curM + 1;
 
-      // 1. Accumulate Training Level Permanently
+      // 1. Accumulate Training
       const curTrainProd = getVal('train-prod-lvl');
       if (curTrainProd > 0) {
         p.accumTrainProd = (p.accumTrainProd || 0) + 1;
       }
 
-      // 2. Prepare Next Month Draft (Carry over hardware, staffing, auto-suggest balanced pairs, reset training)
+      // 2. Prepare Next Month Draft
       const curDecision = p.months[curM];
       const nextDecision = JSON.parse(JSON.stringify(curDecision));
-
-      // Reset single-month ephemeral training decisions to 0 (Do NOT auto-spend)
       nextDecision.trainProd = 0;
       nextDecision.trainMkt = 0;
       nextDecision.trainMgmt = 0;
       nextDecision.trainFin = 0;
       nextDecision.trainTech = 0;
 
-      // Ensure next month decision is saved
       if (!p.months[nextM]) {
         p.months[nextM] = nextDecision;
       }
 
-      // Update settledThrough watermark
       p.settledThrough = Math.max(p.settledThrough || 1, nextM);
       saveProfilesToStorage();
 
-      // Load Next Month Data
       loadMonthData(nextM);
       renderTimelineStepper();
 
-      // Smooth scroll to core decision area
       const targetEl = document.getElementById('sec-core-decision');
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      showToast(`已順利進入第 ${nextM} 個月！期初現金、到貨原料與能力加成已完全就緒。`);
+      showToast(`已進入第 ${nextM} 個月！期初現金與到貨原料已結轉就緒。`);
     }
 
     // 6. MAIN CALCULATION ENGINE
     function calculateAll() {
       const curMonth = currentMonth;
 
-      // Hardware Inputs
       const factories = getVal('inp-factory');
       const warehouses = getVal('inp-warehouse');
       const linesA = getVal('inp-lines-a');
 
-      // Training & Abilities (1-grade: +0.02, 2-grade: +0.05, 3-grade: +0.08)
       const tProdLvl = getVal('train-prod-lvl');
       const tMktLvl  = getVal('train-mkt-lvl');
       const tMgmtLvl = getVal('train-mgmt-lvl');
@@ -1513,15 +1296,14 @@
       const feeTech = tTechLvl * 300000;
       const totalTrainingFee = feeProd + feeMkt + feeMgmt + feeFin + feeTech;
 
-      setHtml('train-prod-fee-badge', `$${formatNumber(feeProd)}`);
-      setHtml('total-training-fee', `$${formatNumber(totalTrainingFee)} 元`);
+      setHtml('train-prod-fee-badge', `$${fmtMoney(feeProd)}`);
 
       const pProfile = appProfiles[currentProfile];
       const accumProd = (pProfile?.accumTrainProd || (curMonth >= 9 ? 2 : (curMonth >= 3 ? 1 : 0)));
 
-      const incG1 = 0.02; // 實測 1 類增值
-      const incG2 = 0.05; // 實測 2 類增值
-      const incG3 = 0.08; // 3 類自訂增值 (假設)
+      const incG1 = 0.02;
+      const incG2 = 0.05;
+      const incG3 = 0.08;
 
       function calcDeptAbilities(accumBoost, currentLvl) {
         const totalBoost = accumBoost + currentLvl;
@@ -1542,7 +1324,6 @@
       setHtml('txt-ab-a2', abProd.c2.toFixed(2));
       setHtml('txt-ab-a3', abProd.c3.toFixed(2));
 
-      // Production Staffing & Human Processing Capacity
       const pA1 = getVal('staff-prod-a1'), pA2 = getVal('staff-prod-a2'), pA3 = getVal('staff-prod-a3');
       const totWorkersA = pA1 + pA2 + pA3;
       setHtml('staffing-status-a', `${totWorkersA} / ${linesA * 10} 人`);
@@ -1553,29 +1334,23 @@
       window.currentHumanCap = humanCapA;
 
       const avgAbProd = totWorkersA > 0 ? ((pA1 * abProd.c1 + pA2 * abProd.c2 + pA3 * abProd.c3) / totWorkersA).toFixed(2) : '0.00';
-      setHtml('box-human-cap', `${formatNumber(humanCapA)} <span class="text-xs font-normal text-slate-400">台/月</span>`);
+      setHtml('box-human-cap', `${formatNumber(humanCapA)} <span class="text-xs font-normal text-slate-400 font-sans">台/月</span>`);
       setHtml('box-human-workers', `${totWorkersA} 人`);
       setHtml('box-human-avg-ab', avgAbProd);
 
-      // Two-Way Balanced Raw Material Input & Yielded Output
       const yieldRate = (parseFloat(document.getElementById('inp-yield-custom').value) || 73.8) / 100;
-      const ratioA = parseFloat(document.getElementById('inp-ratio-a').value) || 0.5;
+      const ratioA = 0.5;
 
       const reqPairsA = Math.ceil(humanCapA / Math.max(0.01, yieldRate));
-      setHtml('box-req-pairs', `${formatNumber(reqPairsA)} <span class="text-xs font-normal text-slate-400">套原料</span>`);
+      setHtml('box-req-pairs', `${formatNumber(reqPairsA)} <span class="text-xs font-normal text-slate-400 font-sans">套</span>`);
       setHtml('box-req-units', `${formatNumber(reqPairsA * 2)} 個`);
 
       const actualInputPairsA = getVal('inp-pairs-a');
-      setHtml('txt-mat-summary', `耗用原料 ${formatNumber(actualInputPairsA * 2)} 個 (A01: ${formatNumber(actualInputPairsA)}, A02: ${formatNumber(actualInputPairsA)})`);
+      setHtml('txt-mat-summary', `耗用 ${formatNumber(actualInputPairsA * 2)} 個`);
 
       const matYieldedCapA = Math.floor(actualInputPairsA * yieldRate);
-      setHtml('box-yield-cap', `${formatNumber(matYieldedCapA)} <span class="text-xs font-normal text-slate-400">台/月</span>`);
-      setHtml('box-actual-pairs', `${formatNumber(actualInputPairsA)} 套`);
-      setHtml('box-actual-yield', `${(yieldRate * 100).toFixed(1)}%`);
-
-      // Final Effective Finished Output
       const finishedCapA = Math.min(humanCapA, matYieldedCapA);
-      setHtml('box-effective-cap', `${formatNumber(finishedCapA)} <span class="text-xs font-normal text-slate-400">台/月</span>`);
+      setHtml('box-effective-cap', `${formatNumber(finishedCapA)} <span class="text-xs font-normal text-slate-400 font-sans">台/月</span>`);
 
       const hasAutomation = curMonth >= 10;
       const shipRate = hasAutomation ? 0.92 : 0.90;
@@ -1583,23 +1358,22 @@
       const shipNext = finishedCapA - shipNow;
       setHtml('box-ship-preview', `${formatNumber(shipNow)} 台出貨 (${(shipRate*100).toFixed(0)}%)`);
 
-      // Diagnosis Badge & Text
       const diffPairs = actualInputPairsA - reqPairsA;
       const pillEl = document.getElementById('balance-pill');
       const diagEl = document.getElementById('box-balance-diagnosis');
       if (Math.abs(diffPairs) <= 1 && humanCapA > 0) {
         pillEl.className = 'px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-        pillEl.innerText = '★ 完美產銷平衡';
-        diagEl.innerHTML = '★ 人力加工能與原料投產完全匹配，產能發揮 100%，無任何原料或工時浪費。';
+        pillEl.innerText = '★ 完美平衡';
+        diagEl.innerHTML = '★ 人力與投料完全匹配，產能 100%，無工時與原料浪費。';
       } else if (diffPairs < -1) {
         pillEl.className = 'px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
-        pillEl.innerText = '⚠️ 原料投產不足';
+        pillEl.innerText = '⚠️ 投料不足';
         const wasted = humanCapA - matYieldedCapA;
-        diagEl.innerHTML = `⚠️ 原料投料不足！閒置產能 ${wasted} 台，建議補投 ${Math.abs(diffPairs)} 套原料達到滿載。`;
+        diagEl.innerHTML = `⚠️ 投料不足！閒置產能 ${wasted} 台，建議補投 ${Math.abs(diffPairs)} 套達到滿載。`;
       } else {
         pillEl.className = 'px-2 py-0.5 rounded text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
-        pillEl.innerText = '⚠️ 人力產能不足';
-        diagEl.innerHTML = `⚠️ 工人人數不足以消化投料！多投 ${diffPairs} 套原料將列為超量回庫，造成資金積壓。`;
+        pillEl.innerText = '⚠️ 人力不足';
+        diagEl.innerHTML = `⚠️ 工人人數不足以消化投料！多投 ${diffPairs} 套原料將回庫積壓。`;
       }
 
       // Backend Sales Force
@@ -1619,47 +1393,48 @@
       setHtml('sales-fin', `${formatNumber(salesFin)} K`);
       setHtml('sales-tech', `${formatNumber(salesTech)} K`);
 
+      setHtml('sales-mkt-summary', `${formatNumber(salesMkt)} K`);
+      setHtml('sales-mgmt-summary', `${formatNumber(salesMgmt)} K`);
+      setHtml('sales-fin-summary', `${formatNumber(salesFin)} K`);
+      setHtml('sales-tech-summary', `${formatNumber(salesTech)} K`);
+
       const minSales = Math.min(salesMkt, salesMgmt, salesFin, salesTech);
       setHtml('lbl-min-sales', `有效短板：${formatNumber(minSales)} K`);
 
-      // Pricing & Market Benchmarks
       const fx = FX_RATES[curMonth] || 29.83;
       setHtml('lbl-fx-rate', fx.toFixed(2));
 
       const pEmUSD = getVal('inp-price-em');
       const pDevUSD = getVal('inp-price-dev');
-      const allocEm = getVal('inp-alloc-em') / 100;
-      const allocDev = getVal('inp-alloc-dev') / 100;
-
-      setHtml('alloc-em-lbl', `分配 ${(allocEm*100).toFixed(0)}%`);
-      setHtml('alloc-dev-lbl', `分配 ${(allocDev*100).toFixed(0)}%`);
+      const allocEm = 0.60;
+      const allocDev = 0.40;
 
       const mktAvgEm = MKT_AVG_PRICES[curMonth]?.em_a || 264.60;
       const mktAvgDev = MKT_AVG_PRICES[curMonth]?.dev_a || 293.60;
-      setHtml('lbl-mkt-avg-em', `$${mktAvgEm.toFixed(2)}`);
-      setHtml('lbl-mkt-avg-dev', `$${mktAvgDev.toFixed(2)}`);
+      setHtml('lbl-mkt-avg-em', `$${mktAvgEm.toFixed(1)}`);
+      setHtml('lbl-mkt-avg-dev', `$${mktAvgDev.toFixed(1)}`);
 
       const diffEm = pEmUSD - mktAvgEm;
       const pctEm = (diffEm / mktAvgEm) * 100;
       const diffEmEl = document.getElementById('lbl-mkt-diff-em');
-      diffEmEl.innerText = `${diffEm >= 0 ? '+' : ''}${diffEm.toFixed(2)} (${diffEm >= 0 ? '+' : ''}${pctEm.toFixed(1)}%)`;
-      diffEmEl.className = diffEm > 15 ? 'font-bold text-rose-400' : (diffEm < -15 ? 'font-bold text-amber-300' : 'font-bold text-emerald-400');
+      diffEmEl.innerText = `${diffEm >= 0 ? '+' : ''}${diffEm.toFixed(1)} (${diffEm >= 0 ? '+' : ''}${pctEm.toFixed(1)}%)`;
+      diffEmEl.className = diffEm > 15 ? 'font-bold text-rose-400 font-mono' : (diffEm < -15 ? 'font-bold text-amber-300 font-mono' : 'font-bold text-emerald-400 font-mono');
 
       const diffDev = pDevUSD - mktAvgDev;
       const pctDev = (diffDev / mktAvgDev) * 100;
       const diffDevEl = document.getElementById('lbl-mkt-diff-dev');
-      diffDevEl.innerText = `${diffDev >= 0 ? '+' : ''}${diffDev.toFixed(2)} (${diffDev >= 0 ? '+' : ''}${pctDev.toFixed(1)}%)`;
-      diffDevEl.className = diffDev > 15 ? 'font-bold text-rose-400' : (diffDev < -15 ? 'font-bold text-amber-300' : 'font-bold text-emerald-400');
+      diffDevEl.innerText = `${diffDev >= 0 ? '+' : ''}${diffDev.toFixed(1)} (${diffDev >= 0 ? '+' : ''}${pctDev.toFixed(1)}%)`;
+      diffDevEl.className = diffDev > 15 ? 'font-bold text-rose-400 font-mono' : (diffDev < -15 ? 'font-bold text-amber-300 font-mono' : 'font-bold text-emerald-400 font-mono');
 
-      // Pre-order Costs (Raw Materials)
+      // Pre-order Costs
       const preA01 = getVal('inp-preorder-a01');
       const preA02 = getVal('inp-preorder-a02');
       const costUnitA01 = (curMonth >= 11 ? 959 : (curMonth >= 10 ? 972 : (curMonth >= 9 ? 989 : 1002)));
       const costUnitA02 = (curMonth >= 11 ? 1151 : (curMonth >= 10 ? 1167 : (curMonth >= 9 ? 1187 : 1203)));
       const preorderTotalCost = preA01 * costUnitA01 + preA02 * costUnitA02;
-      setHtml('txt-preorder-total-cost', `$${formatNumber(preorderTotalCost)} 元`);
+      setHtml('txt-preorder-total-cost', `$${fmtMoney(preorderTotalCost)}`);
 
-      // Finished Goods Inventory & COGS
+      // Inventory & COGS
       const prevMonth = Math.max(1, curMonth - 1);
       const prevFg = FG_HISTORY[prevMonth] || { end_qty: 0, avg_cost: 0 };
       const begQty = (curMonth === 1 || curMonth === 2) ? 0 : (prevFg.end_qty || 0);
@@ -1705,33 +1480,25 @@
       const simGP = simRevenue - simCOGS;
       const gpMargin = simRevenue > 0 ? (simGP / simRevenue) * 100 : 0;
 
-      // Update Finished Goods Table (Tab 2)
+      // Update Inventory Table (Tab 2)
       setHtml('inv-r1-qty', formatNumber(begQty));
       setHtml('inv-r2-cost', formatNumber(begCost));
-      setHtml('inv-r3-tot', formatNumber(begTotCost));
+      setHtml('inv-r3-tot', `$${fmtMoney(begTotCost)}`);
       setHtml('inv-r4-qty', formatNumber(finishedCapA));
       setHtml('inv-r5-cost', formatNumber(unitMfgCost));
-      setHtml('inv-r6-tot', formatNumber(finTotCost));
+      setHtml('inv-r6-tot', `$${fmtMoney(finTotCost)}`);
       setHtml('inv-r7-totqty', formatNumber(totAvailableQty));
       setHtml('inv-r7-cost', formatNumber(weightedAvgCost));
-      setHtml('inv-r7-tot', formatNumber(totAvailableCost));
+      setHtml('inv-r7-tot', `$${fmtMoney(totAvailableCost)}`);
       setHtml('inv-r8-qty', formatNumber(shipNow));
-      setHtml('inv-r9-qty', formatNumber(sellableUnits));
-      setHtml('inv-r10-qty', formatNumber(soldEm));
-      setHtml('inv-r10-cost', formatNumber(weightedAvgCost));
-      setHtml('inv-r10-cogs', formatNumber(soldEm * weightedAvgCost));
-      setHtml('inv-r11-qty', formatNumber(soldDev));
-      setHtml('inv-r11-cost', formatNumber(weightedAvgCost));
-      setHtml('inv-r11-cogs', formatNumber(soldDev * weightedAvgCost));
       setHtml('inv-cogs-qty', formatNumber(totalSold));
       setHtml('inv-cogs-cost', formatNumber(weightedAvgCost));
-      setHtml('inv-cogs-tot', formatNumber(simCOGS));
-      setHtml('inv-r12-qty', formatNumber(shipNext));
+      setHtml('inv-cogs-tot', `$${fmtMoney(simCOGS)}`);
       setHtml('inv-r13-qty', formatNumber(endQty));
       setHtml('inv-r14-cost', formatNumber(weightedAvgCost));
-      setHtml('inv-r15-tot', formatNumber(endCostTot));
+      setHtml('inv-r15-tot', `$${fmtMoney(endCostTot)}`);
 
-      // Operating Expenses & Net Profit
+      // Expenses & Net Profit
       const baseMgmtSal = 250000;
       const salMkt = mkt1 * 28000 + mkt2 * 35000 + mkt3 * 52500;
       const salMgmt = mgmt1 * 28000 + mgmt2 * 35000 + mgmt3 * 52500;
@@ -1752,118 +1519,79 @@
       const simOpex = simGA + simMS + rdFee + creditLoss;
       const simNP = simGP - simOpex;
 
-      // Real Historical Benchmark for Tab 1
+      // Real Historical Benchmark
       const real = C01_HISTORY[curMonth] || {
         rev: simRevenue, cogs: simCOGS, gp: simGP, ga: simGA, ms: simMS, rd: rdFee,
         credit: creditLoss, opex: simOpex, np: simNP, cash: 7000000, ar: arCurrent,
         ap: 3000000, inv_fg: endCostTot, inv_mat: 100000, ppe: 3000000, equity: 7000000
       };
 
-      setHtml('audit-sim-rev', `$${formatNumber(simRevenue)}`);
-      setHtml('audit-real-rev', `$${formatNumber(real.rev)}`);
+      // Top Executive KPI Cards
+      setHtml('kpi-rev', `$${fmtMoney(simRevenue)}`);
+      setHtml('kpi-np', `${simNP >= 0 ? '+' : ''}$${fmtMoney(simNP)}`);
+      setHtml('kpi-cash', `$${fmtMoney(real.cash)}`);
+
+      // Audit Tab Table (Tab 1)
+      setHtml('audit-sim-rev', `$${fmtMoney(simRevenue)}`);
+      setHtml('audit-real-rev', `$${fmtMoney(real.rev)}`);
       setHtml('audit-diff-rev', `$${formatNumber(simRevenue - real.rev)}`);
 
-      setHtml('audit-sim-cogs', `-$${formatNumber(simCOGS)}`);
-      setHtml('audit-real-cogs', `-$${formatNumber(real.cogs)}`);
+      setHtml('audit-sim-cogs', `-$${fmtMoney(simCOGS)}`);
+      setHtml('audit-real-cogs', `-$${fmtMoney(real.cogs)}`);
       setHtml('audit-diff-cogs', `$${formatNumber(simCOGS - real.cogs)}`);
 
-      setHtml('audit-sim-gp', `$${formatNumber(simGP)}`);
-      setHtml('audit-real-gp', `$${formatNumber(real.gp)}`);
+      setHtml('audit-sim-gp', `$${fmtMoney(simGP)}`);
+      setHtml('audit-real-gp', `$${fmtMoney(real.gp)}`);
       setHtml('audit-diff-gp', `$${formatNumber(simGP - real.gp)}`);
 
-      setHtml('audit-sim-ga', `-$${formatNumber(simGA)}`);
-      setHtml('audit-real-ga', `-$${formatNumber(real.ga)}`);
-      setHtml('audit-diff-ga', `$${formatNumber(simGA - real.ga)}`);
-
-      setHtml('audit-sim-ms', `-$${formatNumber(simMS)}`);
-      setHtml('audit-real-ms', `-$${formatNumber(real.ms)}`);
-      setHtml('audit-diff-ms', `$${formatNumber(simMS - real.ms)}`);
-
-      setHtml('audit-sim-rd', `-$${formatNumber(rdFee)}`);
-      setHtml('audit-real-rd', `-$${formatNumber(real.rd)}`);
-      setHtml('audit-diff-rd', `$${formatNumber(rdFee - real.rd)}`);
-
-      setHtml('audit-sim-credit', `${creditLoss >= 0 ? '-' : '+'}$${formatNumber(Math.abs(creditLoss))}`);
-      setHtml('audit-real-credit', `${real.credit >= 0 ? '-' : '+'}$${formatNumber(Math.abs(real.credit))}`);
-      setHtml('audit-diff-credit', `$${formatNumber(creditLoss - real.credit)}`);
-
-      setHtml('audit-sim-opex', `-$${formatNumber(simOpex)}`);
-      setHtml('audit-real-opex', `-$${formatNumber(real.opex)}`);
+      setHtml('audit-sim-opex', `-$${fmtMoney(simOpex)}`);
+      setHtml('audit-real-opex', `-$${fmtMoney(real.opex)}`);
       setHtml('audit-diff-opex', `$${formatNumber(simOpex - real.opex)}`);
 
-      setHtml('audit-sim-np', `${simNP >= 0 ? '+' : ''}$${formatNumber(simNP)}`);
-      setHtml('audit-real-np', `${real.np >= 0 ? '+' : ''}$${formatNumber(real.np)}`);
+      setHtml('audit-sim-np', `${simNP >= 0 ? '+' : ''}$${fmtMoney(simNP)}`);
+      setHtml('audit-real-np', `${real.np >= 0 ? '+' : ''}$${fmtMoney(real.np)}`);
       setHtml('audit-diff-np', `${(simNP - real.np) >= 0 ? '+' : ''}$${formatNumber(simNP - real.np)}`);
 
       const variance = real.rev > 0 ? Math.abs(simRevenue - real.rev) / real.rev : 0;
       const matchPct = Math.max(0, (1 - variance) * 100);
-      setHtml('calib-match-rate', `核對吻合度：${matchPct.toFixed(1)}%`);
+      setHtml('calib-match-rate', `吻合度：${matchPct.toFixed(1)}%`);
 
-      // Update Raw Material Table (Tab 3)
+      // Raw Material Table (Tab 3)
       const prevPreorderA01 = (pProfile?.months?.[prevMonth]?.preorderA01 ?? 250);
       const prevPreorderA02 = (pProfile?.months?.[prevMonth]?.preorderA02 ?? 250);
       const inboundA01 = (curMonth <= 2 ? 0 : prevPreorderA01);
       const inboundA02 = (curMonth <= 2 ? 0 : prevPreorderA02);
-      const begMatA01 = 0;
-      const begMatA02 = 0;
 
-      setHtml('rm-r1-a01', formatNumber(begMatA01));
-      setHtml('rm-r1-a02', formatNumber(begMatA02));
-      setHtml('rm-r1-tot', formatNumber(begMatA01 + begMatA02));
-      setHtml('rm-r2-a01', formatNumber(costUnitA01));
-      setHtml('rm-r2-a02', formatNumber(costUnitA02));
-      setHtml('rm-r3-a01', `$${formatNumber(begMatA01 * costUnitA01)}`);
-      setHtml('rm-r3-a02', `$${formatNumber(begMatA02 * costUnitA02)}`);
-      setHtml('rm-r3-tot', `$${formatNumber(begMatA01 * costUnitA01 + begMatA02 * costUnitA02)}`);
+      setHtml('rm-r1-a01', formatNumber(0));
+      setHtml('rm-r1-a02', formatNumber(0));
+      setHtml('rm-r3-tot', `$0`);
 
       setHtml('rm-r4-a01', formatNumber(inboundA01));
       setHtml('rm-r4-a02', formatNumber(inboundA02));
-      setHtml('rm-r4-tot', formatNumber(inboundA01 + inboundA02));
-      setHtml('rm-r5-a01', formatNumber(costUnitA01));
-      setHtml('rm-r5-a02', formatNumber(costUnitA02));
-      setHtml('rm-r6-a01', `$${formatNumber(inboundA01 * costUnitA01)}`);
-      setHtml('rm-r6-a02', `$${formatNumber(inboundA02 * costUnitA02)}`);
-      setHtml('rm-r6-tot', `$${formatNumber(inboundA01 * costUnitA01 + inboundA02 * costUnitA02)}`);
-
-      setHtml('rm-r7-a01', formatNumber(begMatA01 + inboundA01));
-      setHtml('rm-r7-a02', formatNumber(begMatA02 + inboundA02));
-      setHtml('rm-r7-tot', formatNumber(begMatA01 + inboundA01 + begMatA02 + inboundA02));
+      setHtml('rm-r6-tot', `$${fmtMoney(inboundA01 * costUnitA01 + inboundA02 * costUnitA02)}`);
 
       setHtml('rm-r9-a01', formatNumber(countA01));
       setHtml('rm-r9-a02', formatNumber(countA02));
-      setHtml('rm-r9-tot', formatNumber(actualInputPairsA * 2));
-      setHtml('rm-r11-a01', `$${formatNumber(countA01 * costUnitA01)}`);
-      setHtml('rm-r11-a02', `$${formatNumber(countA02 * costUnitA02)}`);
-      setHtml('rm-r11-tot', `$${formatNumber(totalMatCost)}`);
+      setHtml('rm-r11-tot', `$${fmtMoney(totalMatCost)}`);
 
       setHtml('rm-r13-a01', formatNumber(preA01));
       setHtml('rm-r13-a02', formatNumber(preA02));
-      setHtml('rm-r13-tot', formatNumber(preA01 + preA02));
+      setHtml('rm-r13-tot', `${formatNumber(preA01 + preA02)} 個`);
 
-      const endMatA01 = Math.max(0, begMatA01 + inboundA01 - countA01);
-      const endMatA02 = Math.max(0, begMatA02 + inboundA02 - countA02);
+      const endMatA01 = Math.max(0, inboundA01 - countA01);
+      const endMatA02 = Math.max(0, inboundA02 - countA02);
       setHtml('rm-r16-a01', formatNumber(endMatA01));
       setHtml('rm-r16-a02', formatNumber(endMatA02));
-      setHtml('rm-r16-tot', formatNumber(endMatA01 + endMatA02));
-      setHtml('rm-r18-a01', `$${formatNumber(endMatA01 * costUnitA01)}`);
-      setHtml('rm-r18-a02', `$${formatNumber(endMatA02 * costUnitA02)}`);
-      setHtml('rm-r18-tot', `$${formatNumber(endMatA01 * costUnitA01 + endMatA02 * costUnitA02)}`);
+      setHtml('rm-r18-tot', `$${fmtMoney(endMatA01 * costUnitA01 + endMatA02 * costUnitA02)}`);
 
       // Balance Sheet Updates (Tab 4)
-      setHtml('bs-cash', `$${(real.cash/1000).toFixed(1)} K`);
-      setHtml('bs-ar', `$${((arCurrent - allowanceCurrent)/1000).toFixed(1)} K`);
-      setHtml('bs-inv-fg', `$${(endCostTot/1000).toFixed(1)} K`);
-      setHtml('bs-inv-mat', `$${(real.inv_mat/1000).toFixed(1)} K`);
-      setHtml('bs-fixed', `$${(real.ppe/1000).toFixed(1)} K`);
-      const simAssets = real.cash + (arCurrent - allowanceCurrent) + endCostTot + real.inv_mat + real.ppe;
-      setHtml('bs-total-assets', `$${(simAssets/1000).toFixed(1)} K`);
-      setHtml('bs-ap', `$${(real.ap/1000).toFixed(1)} K`);
-      const totalWages = directLabor + baseMgmtSal + salMkt + salMgmt + salFin + salTech;
-      setHtml('bs-sal', `$${(totalWages/1000).toFixed(1)} K`);
-      setHtml('bs-equity', `$${(real.equity/1000).toFixed(1)} K`);
-      setHtml('bs-nav', `$${(real.equity / 1000000).toFixed(2)} 元`);
+      setHtml('bs-cash', `$${fmtMoney(real.cash)}`);
+      setHtml('bs-ar', `$${fmtMoney(arCurrent - allowanceCurrent)}`);
+      setHtml('bs-fixed', `$${fmtMoney(real.ppe)}`);
+      setHtml('bs-ap', `$${fmtMoney(real.ap)}`);
+      setHtml('bs-equity', `$${fmtMoney(real.equity)}`);
+      setHtml('bs-nav', `${(real.equity / 1000000).toFixed(2)} 元`);
 
-      // Store summary for settlement report
       currentSettlementReport = {
         m: curMonth,
         rev: simRevenue,
@@ -1874,13 +1602,10 @@
         np: simNP,
         endCash: real.cash,
         nextAvailMat: preA01,
-        preorderPairs: preA01,
-        endMatPairs: endMatA01,
         endFgQty: endQty,
         endFgCost: endCostTot,
         ab1: abProd.c1.toFixed(2),
-        ab2: abProd.c2.toFixed(2),
-        accumProdCount: accumProd + (tProdLvl > 0 ? 1 : 0)
+        ab2: abProd.c2.toFixed(2)
       };
     }
 
@@ -1891,10 +1616,10 @@
         const btn = document.getElementById(`tab-btn-${t}`);
         const content = document.getElementById(`tab-content-${t}`);
         if (t === tab) {
-          btn.className = 'flex-1 py-2 px-1 rounded-lg tab-active transition text-center';
+          btn.className = 'flex-1 py-1.5 px-1 rounded-lg tab-active transition text-center';
           content.classList.remove('hidden');
         } else {
-          btn.className = 'flex-1 py-2 px-1 rounded-lg text-slate-400 hover:text-white transition text-center';
+          btn.className = 'flex-1 py-1.5 px-1 rounded-lg text-slate-400 hover:text-white transition text-center';
           content.classList.add('hidden');
         }
       }
@@ -1929,6 +1654,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initProfileStorage();
       loadMonthData(6);
+      switchViewMode('simple');
     });
   </script>
 </body>
