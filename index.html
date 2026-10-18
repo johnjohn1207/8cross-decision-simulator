@@ -403,9 +403,12 @@
           <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
             <h2 class="text-base font-bold text-white flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-              三、 官方教育訓練與三級員工增值機制
+              三、 官方教育訓練與三級員工增值機制 (1類+0.02 / 2類+0.05)
             </h2>
-            <span class="text-xs text-amber-400 font-mono" id="total-training-fee">本月訓練費：$0 元</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-slate-400">3類增值自訂 (假設)：<input type="number" id="train-g3-inc" min="0.01" max="0.20" step="0.01" value="0.08" oninput="onUserInputChange()" class="w-12 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center font-bold text-amber-300"></span>
+              <span class="text-xs text-amber-400 font-mono" id="total-training-fee">本月訓練費：$0 元</span>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
@@ -414,9 +417,9 @@
               <span class="font-bold text-blue-400 block">生產培訓 (Prod)</span>
               <select id="train-prod-lvl" onchange="onUserInputChange()" class="w-full bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-slate-200 font-bold">
                 <option value="0">0級 (無)</option>
-                <option value="1">1級 (+0.05, 10萬)</option>
-                <option value="2">2級 (+0.10, 20萬)</option>
-                <option value="3">3級 (+0.15, 30萬)</option>
+                <option value="1">1級 (1類+0.02/2類+0.05, 10萬)</option>
+                <option value="2">2級 (1類+0.04/2類+0.10, 20萬)</option>
+                <option value="3">3級 (1類+0.06/2類+0.15, 30萬)</option>
               </select>
               <span class="text-[10px] text-slate-400 block" id="txt-prod-train-eff">當期增值: +0.00</span>
             </div>
@@ -470,7 +473,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
             <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
               <div class="flex justify-between text-slate-300 font-medium mb-1">
-                <span>1類員工 (上限1.00)</span>
+                <span>1類員工 (每次+0.02, 上限1.00)</span>
                 <span id="badge-c1" class="text-blue-400 font-bold">能力 0.50</span>
               </div>
               <div class="w-full bg-slate-800 rounded-full h-1.5">
@@ -479,7 +482,7 @@
             </div>
             <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
               <div class="flex justify-between text-slate-300 font-medium mb-1">
-                <span>2類員工 (上限1.20)</span>
+                <span>2類員工 (每次+0.05, 上限1.20)</span>
                 <span id="badge-c2" class="text-indigo-400 font-bold">能力 0.60</span>
               </div>
               <div class="w-full bg-slate-800 rounded-full h-1.5">
@@ -488,7 +491,7 @@
             </div>
             <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
               <div class="flex justify-between text-slate-300 font-medium mb-1">
-                <span>3類員工 (上限1.40)</span>
+                <span>3類員工 (<span class="text-amber-300">每次+0.08假設</span>, 上限1.40)</span>
                 <span id="badge-c3" class="text-purple-400 font-bold">能力 0.70</span>
               </div>
               <div class="w-full bg-slate-800 rounded-full h-1.5">
@@ -1326,18 +1329,22 @@
       const totalTrainingFee = feeProd + feeMkt + feeMgmt + feeFin + feeTech;
       setHtml('total-training-fee', `本月訓練費：$${formatNumber(totalTrainingFee)} 元`);
 
-      setHtml('txt-prod-train-eff', `當期增值: +${(tProdLvl*0.05).toFixed(2)}`);
-      setHtml('txt-mkt-train-eff', `當期增值: +${(tMktLvl*0.05).toFixed(2)}`);
-      setHtml('txt-mgmt-train-eff', `當期增值: +${(tMgmtLvl*0.05).toFixed(2)}`);
-      setHtml('txt-fin-train-eff', `當期增值: +${(tFinLvl*0.05).toFixed(2)}`);
-      setHtml('txt-tech-train-eff', `當期增值: +${(tTechLvl*0.05).toFixed(2)}`);
+      setHtml('txt-prod-train-eff', `增值: 1類+${(tProdLvl*0.02).toFixed(2)} / 2類+${(tProdLvl*0.05).toFixed(2)}`);
+      setHtml('txt-mkt-train-eff', `增值: 1類+${(tMktLvl*0.02).toFixed(2)} / 2類+${(tMktLvl*0.05).toFixed(2)}`);
+      setHtml('txt-mgmt-train-eff', `增值: 1類+${(tMgmtLvl*0.02).toFixed(2)} / 2類+${(tMgmtLvl*0.05).toFixed(2)}`);
+      setHtml('txt-fin-train-eff', `增值: 1類+${(tFinLvl*0.02).toFixed(2)} / 2類+${(tFinLvl*0.05).toFixed(2)}`);
+      setHtml('txt-tech-train-eff', `增值: 1類+${(tTechLvl*0.02).toFixed(2)} / 2類+${(tTechLvl*0.05).toFixed(2)}`);
 
       function calcDeptAbilities(accumBoost, currentLvl) {
         const totalBoost = accumBoost + currentLvl;
+        const incG1 = 0.02; // 實測第 1 類員工每次增值 +0.02
+        const incG2 = 0.05; // 實測第 2 類員工每次增值 +0.05
+        const elG3 = document.getElementById('train-g3-inc');
+        const incG3 = elG3 ? (parseFloat(elG3.value) || 0.08) : 0.08; // 第 3 類員工增值 (假設基準 +0.08)
         return {
-          c1: Math.min(1.00, 0.50 + totalBoost * 0.05),
-          c2: Math.min(1.20, 0.60 + totalBoost * 0.06),
-          c3: Math.min(1.40, 0.70 + totalBoost * 0.07)
+          c1: Math.min(1.00, 0.50 + totalBoost * incG1),
+          c2: Math.min(1.20, 0.60 + totalBoost * incG2),
+          c3: Math.min(1.40, 0.70 + totalBoost * incG3)
         };
       }
 
