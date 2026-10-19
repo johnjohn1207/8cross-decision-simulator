@@ -205,9 +205,14 @@
           <span class="font-bold text-slate-400 shrink-0">平衡診斷：</span>
           <span id="box-balance-diagnosis" class="text-emerald-300 font-medium truncate">★ 人力加工能與原料投產完全匹配，產能發揮 100%。</span>
         </div>
-        <button onclick="applyAutoBalancedPairs()" class="shrink-0 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow">
-          <span>⚡</span> 一鍵填入「滿足人力所需原料」
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="applyAutoBalancedPairs()" class="shrink-0 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow" title="依當前作業員人數與良率，自動計算投料套數">
+            一鍵填入「滿足人力所需原料」
+          </button>
+          <button onclick="applySalesPowerBalancedPairs()" class="shrink-0 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow" title="依全公司有效銷售力上限反推 100% 滿載所需投產之原料套數">
+            一鍵填入「完整發揮銷售力所需原料」
+          </button>
+        </div>
       </div>
     </div>
 
@@ -421,6 +426,59 @@
             <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800">
               <span class="text-purple-400 block text-[10px]">技術 (4人)</span>
               <strong class="text-white font-mono text-xs" id="sales-tech-summary">4,032 K</strong>
+            </div>
+          </div>
+
+          <!-- 銷售力滿載換算目標與產銷匹配檢核 -->
+          <div class="p-3 bg-gradient-to-r from-slate-950/90 via-slate-900 to-slate-950/90 rounded-xl border border-blue-500/30 space-y-2">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-1.5 border-b border-slate-800 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-blue-400 font-bold text-xs">
+                  ★ 銷售力滿載換算目標（完整發揮銷售力需賣多少）
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">產銷對抗核算</span>
+              </div>
+              <div class="text-[11px] text-slate-400">
+                單台加權平均售價：<strong id="lbl-blended-price-ntd" class="text-white font-mono">$8,293</strong> 元
+              </div>
+            </div>
+
+            <!-- 3-Metric Horizontal Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5 text-xs">
+              <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">完整發揮需售出銷量</span>
+                <div class="flex items-baseline gap-1 mt-0.5">
+                  <strong class="text-base font-black text-amber-300 font-mono" id="txt-sales-max-units">489</strong>
+                  <span class="text-[11px] text-slate-400">台 / 月</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-0.5" id="txt-sales-max-rev">對應滿載產值 $403.2 萬 (4,032 K)</span>
+              </div>
+
+              <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">當前出貨 / 銷售力發揮率</span>
+                <div class="flex items-baseline gap-1 mt-0.5">
+                  <strong class="text-base font-black text-emerald-300 font-mono" id="txt-sales-util-rate">72.8%</strong>
+                  <span class="text-[11px] text-slate-400">(<span id="txt-cur-sold-units">356</span> 台)</span>
+                </div>
+                <div class="w-full bg-slate-950 rounded-full h-1.5 mt-1 border border-slate-800">
+                  <div id="bar-sales-util" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-1.5 rounded-full transition-all duration-300" style="width: 72.8%"></div>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">產銷落差與瓶頸判定</span>
+                <div class="flex items-baseline gap-1 mt-0.5">
+                  <strong class="text-base font-black text-amber-400 font-mono" id="txt-sales-gap-units">閒置 133 台</strong>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-0.5" id="txt-sales-gap-desc">尚餘 133 台銷售配額未釋放</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Advice Note -->
+            <div id="box-sales-power-advice" class="p-2 rounded-lg bg-slate-950/80 border border-slate-800/80 text-[11px] text-slate-300 leading-relaxed">
+              <span id="txt-sales-power-advice">
+                分析提示：當前銷售力上限為 4,032 K，依目前加權售價換算，需賣出 489 台才能 100% 完整發揮銷售力。
+              </span>
             </div>
           </div>
 
@@ -1309,6 +1367,17 @@
       showToast(`已自動平衡投料為 ${reqPairs} 套，並同步設定下月預購！`);
     }
 
+    function applySalesPowerBalancedPairs() {
+      const yieldRate = (parseFloat(document.getElementById('inp-yield-custom').value) || 73.8) / 100;
+      const maxSalesUnits = window.currentMaxSalesUnits || 489;
+      const reqPairs = Math.ceil(maxSalesUnits / Math.max(0.01, yieldRate));
+      document.getElementById('inp-pairs-a').value = reqPairs;
+      document.getElementById('inp-preorder-a01').value = reqPairs;
+      document.getElementById('inp-preorder-a02').value = reqPairs;
+      onInputDataChange();
+      showToast(`已依銷售力上限自動平衡投料為 ${reqPairs} 套（良品產能可達 ${maxSalesUnits} 台滿載）！`);
+    }
+
     // 5. SETTLEMENT MODAL & REALISTIC CARRYOVER ADVANCE
     let currentSettlementReport = null;
 
@@ -1578,6 +1647,83 @@
       const reqSalesK = Math.round((sellableUnits * blendedPriceA) / 1000);
       const absorptionRatio = sellableUnits > 0 ? Math.min(1.0, minSales / Math.max(1, reqSalesK)) : 1.0;
       const totalSold = Math.floor(sellableUnits * absorptionRatio);
+
+      // 銷售力滿載換算核心計算
+      const avgPricePerUnit = blendedPriceA > 0 ? blendedPriceA : 8233;
+      setHtml('lbl-blended-price-ntd', `$${formatNumber(Math.round(avgPricePerUnit))}`);
+
+      // 完整發揮有效銷售力所需賣出台數 (滿載目標銷量)
+      const maxSalesUnits = Math.floor((minSales * 1000) / avgPricePerUnit);
+      window.currentMaxSalesUnits = maxSalesUnits;
+      setHtml('txt-sales-max-units', formatNumber(maxSalesUnits));
+      setHtml('txt-sales-max-rev', `對應滿載產值 $${fmtMoney(minSales * 1000)} (${formatNumber(minSales)} K)`);
+
+      // 當前出貨量與銷售力發揮率 (利用率 / 負荷率)
+      const salesUtilRate = minSales > 0 ? ((reqSalesK / minSales) * 100) : 0;
+      setHtml('txt-sales-util-rate', `${salesUtilRate.toFixed(1)}%`);
+      setHtml('txt-cur-sold-units', formatNumber(sellableUnits));
+
+      const utilBar = document.getElementById('bar-sales-util');
+      if (utilBar) {
+        utilBar.style.width = `${Math.min(100, salesUtilRate)}%`;
+        if (salesUtilRate > 100) {
+          utilBar.className = 'bg-rose-500 h-1.5 rounded-full transition-all duration-300';
+        } else if (salesUtilRate >= 95) {
+          utilBar.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300';
+        } else {
+          utilBar.className = 'bg-blue-400 h-1.5 rounded-full transition-all duration-300';
+        }
+      }
+
+      // 產銷落差與瓶頸判定 (Gap)
+      const salesGapUnits = maxSalesUnits - sellableUnits;
+      const gapEl = document.getElementById('txt-sales-gap-units');
+      const gapDescEl = document.getElementById('txt-sales-gap-desc');
+      const adviceEl = document.getElementById('txt-sales-power-advice');
+      const customYieldRate = (parseFloat(document.getElementById('inp-yield-custom').value) || 73.8) / 100;
+      const balancedPairsForSales = Math.ceil(maxSalesUnits / Math.max(0.01, customYieldRate));
+
+      const bottleneckDepts = [];
+      if (salesMkt === minSales) bottleneckDepts.push('行銷部門');
+      if (salesMgmt === minSales) bottleneckDepts.push('管理部門');
+      if (salesFin === minSales) bottleneckDepts.push('財務部門');
+      if (salesTech === minSales) bottleneckDepts.push('技術部門');
+
+      if (salesGapUnits > 0) {
+        if (gapEl) {
+          gapEl.innerText = `閒置 ${formatNumber(salesGapUnits)} 台`;
+          gapEl.className = 'text-base font-black text-amber-400 font-mono';
+        }
+        if (gapDescEl) {
+          gapDescEl.innerText = `尚有 ${formatNumber(salesGapUnits)} 台銷售配額未釋放`;
+        }
+        if (adviceEl) {
+          adviceEl.innerHTML = `當前全公司最低木桶銷售力為 <strong>${formatNumber(minSales)} K</strong>（短板部門：<strong>${bottleneckDepts.join('、')}</strong>），依當前售價可消化 <strong>${formatNumber(maxSalesUnits)} 台</strong>（滿載產值 $${fmtMoney(minSales * 1000)}）。目前供貨僅 <strong>${formatNumber(sellableUnits)} 台</strong>，銷售力發揮率為 <strong>${salesUtilRate.toFixed(1)}%</strong>，閒置了 <strong>${formatNumber(salesGapUnits)} 台</strong> 額度。若要 100% 完整發揮銷售力，需將出貨提升至 <strong>${formatNumber(maxSalesUnits)} 台</strong>（反推需投產 <strong>${formatNumber(balancedPairsForSales)} 套</strong> 原料），以充分釋放後勤薪資效益。`;
+        }
+      } else if (salesGapUnits === 0) {
+        if (gapEl) {
+          gapEl.innerText = '完美平衡 (0 台)';
+          gapEl.className = 'text-base font-black text-emerald-400 font-mono';
+        }
+        if (gapDescEl) {
+          gapDescEl.innerText = '產能恰好 100% 完整發揮銷售力';
+        }
+        if (adviceEl) {
+          adviceEl.innerHTML = `產銷完美匹配！當前供貨量 <strong>${formatNumber(sellableUnits)} 台</strong> 恰好 100% 完整吃滿 <strong>${formatNumber(minSales)} K</strong> 銷售力，無任何閒置或滯銷風險。`;
+        }
+      } else {
+        const overUnits = Math.abs(salesGapUnits);
+        if (gapEl) {
+          gapEl.innerText = `超產 ${formatNumber(overUnits)} 台`;
+          gapEl.className = 'text-base font-black text-rose-400 font-mono';
+        }
+        if (gapDescEl) {
+          gapDescEl.innerText = '超出銷售力上限，面臨滯銷';
+        }
+        if (adviceEl) {
+          adviceEl.innerHTML = `警告：當前供貨量 <strong>${formatNumber(sellableUnits)} 台</strong> 已超出有效銷售力上限（<strong>${formatNumber(maxSalesUnits)} 台</strong>）。超出之 <strong>${formatNumber(overUnits)} 台</strong> 手機將無法售出，面臨庫存滯銷與倉儲費用損失！建議優先擴充短板部門（<strong>${bottleneckDepts.join('、')}</strong>）的招聘或培訓，以提高銷售力上限。`;
+        }
+      }
 
       const soldEm = Math.round(totalSold * allocEm);
       const soldDev = totalSold - soldEm;
